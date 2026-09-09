@@ -1,0 +1,41 @@
+id,rating,theme,title,description,fen,moves
+1,600,MateIn1,Verified Mate in One #1,Black makes a legal move; White must find the mating move.,7k/5K2/8/8/1p6/5Q2/8/8 b - - 0 1,b4b3 f3h3
+2,600,MateIn1,Verified Mate in One #2,Black makes a legal move; White must find the mating move.,7k/5K2/8/8/1p6/5Q2/8/8 b - - 0 1,h8h7 f3h3
+3,600,MateIn1,Verified Mate in One #3,Black makes a legal move; White must find the mating move.,8/8/3p4/8/8/1K6/6Q1/k7 b - - 0 1,a1b1 g2b2
+4,600,MateIn1,Verified Mate in One #4,Black makes a legal move; White must find the mating move.,8/8/3p4/8/8/1K6/6Q1/k7 b - - 0 1,d6d5 g2b2
+5,600,MateIn1,Verified Mate in One #5,Black makes a legal move; White must find the mating move.,3k4/8/1K6/1p6/8/6Q1/8/8 b - - 0 1,d8c8 g3c7
+6,600,MateIn1,Verified Mate in One #6,Black makes a legal move; White must find the mating move.,8/8/2p5/8/8/5K1k/2Q5/8 b - - 0 1,c6c5 c2h7
+7,600,MateIn1,Verified Mate in One #7,Black makes a legal move; White must find the mating move.,1k6/8/1K6/6p1/8/7Q/8/8 b - - 0 1,b8a8 h3h8
+8,600,MateIn1,Verified Mate in One #8,Black makes a legal move; White must find the mating move.,1k6/8/1K6/6p1/8/7Q/8/8 b - - 0 1,g5g4 h3h8
+9,600,MateIn1,Verified Mate in One #9,Black makes a legal move; White must find the mating move.,6k1/8/7K/8/8/2p5/1Q6/8 b - - 0 1,c3c2 b2g7
+10,600,MateIn1,Verified Mate in One #10,Black makes a legal move; White must find the mating move.,6k1/8/7K/8/8/2p5/1Q6/8 b - - 0 1,g8h8 b2b8
+11,600,MateIn1,Verified Mate in One #11,Black makes a legal move; White must find the mating move.,8/3Q4/8/3p3k/8/5K2/8/8 b - - 0 1,h5h4 d7g4
+12,600,MateIn1,Verified Mate in One #12,Black makes a legal move; White must find the mating move.,5k2/8/5K2/4p3/8/8/8/Q7 b - - 0 1,e5e4 a1a8
+13,600,MateIn1,Verified Mate in One #13,Black makes a legal move; White must find the mating move.,3k4/7Q/2p2K2/8/8/8/8/8 b - - 0 1,d8e8 h7e7
+14,600,MateIn1,Verified Mate in One #14,Black makes a legal move; White must find the mating move.,5K2/7k/8/5p2/8/8/8/5Q2 b - - 0 1,h7h8 f1h1
+15,600,MateIn1,Verified Mate in One #15,Black makes a legal move; White must find the mating move.,2k5/8/3K4/1Q1p4/8/8/8/8 b - - 0 1,c8d8 b5b8
+16,600,MateIn1,Verified Mate in One #16,Black makes a legal move; White must find the mating move.,2Q5/2p4k/5K2/8/8/8/8/8 b - - 0 1,h7h6 c8h8
+17,600,MateIn1,Verified Mate in One #17,Black makes a legal move; White must find the mating move.,7k/8/1p5K/8/8/7Q/8/8 b - - 0 1,b6b5 h3c8
+18,600,MateIn1,Verified Mate in One #18,Black makes a legal move; White must find the mating move.,8/4QK1k/8/8/8/5p2/8/8 b - - 0 1,h7h8 e7h4
+19,600,MateIn1,Verified Mate in One #19,Black makes a legal move; White must find the mating move.,8/4QK1k/8/8/8/5p2/8/8 b - - 0 1,f3f2 e7h4
+20,600,MateIn1,Verified Mate in One #20,Black makes a legal move; White must find the mating move.,8/4QK1k/8/8/8/5p2/8/8 b - - 0 1,h7h6 e7h4
+21,600,MateIn1,Mate in One #21,Black makes a legal move; White must find the mating move.,7k/p7/6K1/8/8/8/8/4R3 b - - 0 1,a7a6 e1e8
+22,620,MateIn1,Mate in One #22,Black makes a legal move; White must find the mating move.,7k/p7/6K1/8/8/8/8/4R3 b - - 0 1,a7a5 e1e8
+23,640,MateIn1,Mate in One #23,Black makes a legal move then White mates in one.,7k/1p6/6K1/8/8/8/4R3 b - - 0 1,b7b6 e1e8
+24,660,MateIn1,Mate in One #24,Black makes a legal move then White mates in one.,7k/1p6/6K1/8/8/8/8/4R3 b - - 0 1,b7b5 e1e8
+25,680,MateIn1,Mate in One #25,Black makes a legal move then White mates in one.,7k/2p5/6K1/8/8/8/8/4R3 b - - 0 1,c7c6 e1e8
+26,700,MateIn1,Mate in One #26,Black makes a legal move then White mates in one.,7k/2p5/6K1/8/8/8/8/4R3 b - - 0 1,c7c5 e1e8
+27,720,MateIn1,Mate in One #27,Black makes a legal move then White mates in one.,7k/3p4/6K1/8/8/8/8/4R3 b - - 0 1,d7d6 e1e8
+28,740,MateIn1,Mate in One #28,Black makes a legal move then White mates in one.,7k/3p4/6K1/8/8/8/8/4R3 b - - 0 1,d7d5 e1e8
+29,760,MateIn1,Mate in One #29,Black makes a legal move then White mates in one.,7k/8/p5K1/8/8/8/8/4R3 b - - 0 1,a6a5 e1e8
+30,780,MateIn1,Mate in One #30,Black makes a legal move then White mates in one.,7k/8/1p4K1/8/8/8/8/4R3 b - - 0 1,b6b5 e1e8
+31,800,MateIn1,Mate in One #31,Black makes a legal move then White mates in one.,7k/8/2p3K1/8/8/8/8/4R3 b - - 0 1,c6c5 e1e8
+32,820,MateIn1,Mate in One #32,Black makes a legal move then White mates in one.,7k/8/3p2K1/8/8/8/8/4R3 b - - 0 1,d6d5 e1e8
+33,840,MateIn1,Mate in One #33,Black makes a legal move then White mates in one.,7k/8/6K1/p7/8/8/8/4R3 b - - 0 1,a5a4 e1e8
+34,860,MateIn1,Mate in One #34,Black makes a legal move then White mates in one.,7k/8/6K1/1p6/8/8/8/4R3 b - - 0 1,b5b4 e1e8
+35,880,MateIn1,Mate in One #35,Black makes a legal move then White mates in one.,7k/8/6K1/2p5/8/8/8/4R3 b - - 0 1,c5c4 e1e8
+36,900,MateIn1,Mate in One #36,Black makes a legal move then White mates in one.,7k/8/6K1/3p4/8/8/8/4R3 b - - 0 1,d5d4 e1e8
+37,920,MateIn1,Mate in One #37,Black makes a legal move then White mates in one.,7k/8/6K1/8/p7/8/8/4R3 b - - 0 1,a4a3 e1e8
+38,940,MateIn1,Mate in One #38,Black makes a legal move then White mates in one.,7k/8/6K1/8/1p6/8/8/4R3 b - - 0 1,b4b3 e1e8
+39,960,MateIn1,Mate in One #39,Black makes a legal move then White mates in one.,7k/8/6K1/8/2p5/8/8/4R3 b - - 0 1,c4c3 e1e8
+40,980,MateIn1,Mate in One #40,Black makes a legal move then White mates in one.,7k/8/6K1/8/3p4/8/8/4R3 b - - 0 1,d4d3 e1e8

@@ -1,0 +1,18 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Maven build output
+target/
+
+# Generated installer/build files
+installer/
+*.exe
+
+# Local game data
+savegame.dat
+
+# OS files
+Thumbs.db
+Desktop.ini
+users.dat
