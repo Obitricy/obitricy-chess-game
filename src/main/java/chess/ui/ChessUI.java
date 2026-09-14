@@ -30,12 +30,6 @@ public class ChessUI extends JPanel {
     // FIXED LAYOUT DIMENSIONS
     // =========================================================
 
-    /*
-     * Both player panels use exactly the same width.
-     *
-     * The toolbar is separate from the BLACK player panel,
-     * so the BLACK and WHITE collection areas remain equal.
-     */
     private static final int PLAYER_CARD_WIDTH = 190;
 
     private static final int TOOLBAR_WIDTH = 78;
@@ -54,6 +48,7 @@ public class ChessUI extends JPanel {
     private ChessBoard chessBoard;
 
     private boolean onlineGame;
+
     /*
      * Online game-over/rematch state.
      *
@@ -65,6 +60,19 @@ public class ChessUI extends JPanel {
      */
     private boolean onlineGameOver;
     private boolean rematchRequested;
+
+    /*
+     * The local online move currently waiting for server
+     * confirmation.
+     *
+     * The server does not echo an accepted MOVE back to the
+     * player who made it, so a pending move is cleared when
+     * the opponent's next move arrives.
+     *
+     * If the server rejects the move, we can safely roll back
+     * this exact local move.
+     */
+    private String pendingOnlineMove;
 
 
     // =========================================================
@@ -192,6 +200,7 @@ public class ChessUI extends JPanel {
 
         this.onlineGameOver = false;
         this.rematchRequested = false;
+        this.pendingOnlineMove = null;
 
         chessBoard =
                 new ChessBoard(
@@ -358,20 +367,6 @@ public class ChessUI extends JPanel {
 
         // =====================================================
         // LEFT RAIL
-        // =====================================================
-        //
-        // IMPORTANT:
-        //
-        // Toolbar has its own width.
-        // Black player card has its own fixed width.
-        //
-        // This prevents the toolbar from shrinking the
-        // BLACK collection area.
-        //
-        // BLACK CARD = 190 px
-        // WHITE CARD = 190 px
-        // TOOLBAR    = 78 px
-        //
         // =====================================================
 
         JPanel leftRail =
@@ -1156,20 +1151,10 @@ public class ChessUI extends JPanel {
                                 "ONLINE SEND UNDO"
                         );
 
-                        /*
-                         * Do NOT undo locally.
-                         *
-                         * The server is authoritative and will
-                         * broadcast the accepted UNDO to both clients.
-                         */
                         multiplayerClient.sendUndo();
 
                     } else {
 
-                        /*
-                         * Offline game:
-                         * continue using the normal local undo.
-                         */
                         chessBoard.undoLastMove();
 
                         updateStatusBar();
@@ -1194,20 +1179,10 @@ public class ChessUI extends JPanel {
                                 "ONLINE SEND REDO"
                         );
 
-                        /*
-                         * Do NOT redo locally.
-                         *
-                         * Wait for the server to authorize the
-                         * operation and broadcast it to both clients.
-                         */
                         multiplayerClient.sendRedo();
 
                     } else {
 
-                        /*
-                         * Offline game:
-                         * continue using the normal local redo.
-                         */
                         chessBoard.redoLastMove();
 
                         updateStatusBar();
@@ -1232,16 +1207,14 @@ public class ChessUI extends JPanel {
                      */
                     if (onlineGame) {
 
-                        JOptionPane.showMessageDialog(
+                        ObitricyDialog.showInfo(
 
                                 this,
 
-                                "The board cannot be reset during an online game.\n\n"
-                                        + "Use Rematch after the game ends.",
-
                                 "Online Multiplayer",
 
-                                JOptionPane.INFORMATION_MESSAGE
+                                "The board cannot be reset during an online game.\n\n"
+                                        + "Use Rematch after the game ends."
                         );
 
                         return;
@@ -1655,14 +1628,6 @@ public class ChessUI extends JPanel {
                         .size();
 
 
-        /*
-         * Chess move numbering:
-         *
-         * 0 -> 1. White's Move
-         * 1 -> 1. Black's Move
-         * 2 -> 2. White's Move
-         */
-
         int moveNumber =
                 (moveCount / 2) + 1;
 
@@ -2018,12 +1983,6 @@ public class ChessUI extends JPanel {
     // =========================================================
     // MOVE HISTORY
     // =========================================================
-    //
-    // We intentionally no longer update SidePanel here.
-    //
-    // The move history will become a slide-out/reference-style
-    // panel later.
-    // =========================================================
 
     public void updateMoveHistory() {
 
@@ -2054,6 +2013,17 @@ public class ChessUI extends JPanel {
                 serializeMove(
                         move
                 );
+
+
+        /*
+         * Remember this exact local move while it is waiting
+         * for server validation.
+         *
+         * The server does not echo accepted moves back to the
+         * player who made them, so the pending move will normally
+         * be cleared when the opponent's next MOVE arrives.
+         */
+        pendingOnlineMove = moveData;
 
 
         System.out.println(
@@ -2111,27 +2081,23 @@ public class ChessUI extends JPanel {
             String data) {
 
         try {
+            /*
+             * If an opponent's move has reached us, the server has
+             * accepted our previous move and the turn has advanced.
+             *
+             * Therefore our pending local move is no longer waiting
+             * for confirmation.
+             */
+            pendingOnlineMove = null;
 
             /*
              * The server may append sender metadata after the canonical
              * move using the "|" separator, for example:
              *
              *     6,0,7,0,Queen|WHITE
-             *
-             * The chess move payload ends before that separator.
-             * Promotion must therefore be parsed from the move payload
-             * only; otherwise "Queen|WHITE" is treated as a piece type.
              */
             String movePayload = data;
 
-            /*
-             * The server appends the mover colour:
-             *
-             *     6,0,7,0,Queen|WHITE
-             *
-             * Keep the metadata so the receiving GameState can restore
-             * the correct side-to-move before applying the remote move.
-             */
             boolean moverIsWhite = false;
             boolean moverColourKnown = false;
 
@@ -2146,10 +2112,12 @@ public class ChessUI extends JPanel {
                                 .trim();
 
                 if ("WHITE".equalsIgnoreCase(metadata)) {
+
                     moverIsWhite = true;
                     moverColourKnown = true;
 
                 } else if ("BLACK".equalsIgnoreCase(metadata)) {
+
                     moverIsWhite = false;
                     moverColourKnown = true;
                 }
@@ -2299,18 +2267,12 @@ public class ChessUI extends JPanel {
             );
 
 
-            // =================================================
-            // APPLY REMOTE MOVE
-            // =================================================
-
-            /*
-             * Prefer the authoritative mover colour supplied by the
-             * server. Fall back to the piece colour only for compatibility
-             * with older servers that did not append metadata.
-             */
             if (!moverColourKnown) {
-                moverIsWhite = piece.isWhite();
+
+                moverIsWhite =
+                        piece.isWhite();
             }
+
 
             chessBoard.applyRemoteMove(
                     move,
@@ -2329,16 +2291,14 @@ public class ChessUI extends JPanel {
             ex.printStackTrace();
 
 
-            JOptionPane.showMessageDialog(
+            ObitricyDialog.showError(
 
                     this,
 
-                    "Unable to apply opponent move:\n"
-                            + ex.getMessage(),
-
                     "Online Game Error",
 
-                    JOptionPane.ERROR_MESSAGE
+                    "Unable to apply opponent move:\n"
+                            + ex.getMessage()
             );
         }
     }
@@ -2429,6 +2389,7 @@ public class ChessUI extends JPanel {
 
                             break;
 
+
                         case UNDO:
 
                             System.out.println(
@@ -2477,15 +2438,13 @@ public class ChessUI extends JPanel {
 
                         case DISCONNECT:
 
-                            JOptionPane.showMessageDialog(
+                            ObitricyDialog.showInfo(
 
                                     this,
 
-                                    "Your opponent has disconnected.",
-
                                     "Online Multiplayer",
 
-                                    JOptionPane.INFORMATION_MESSAGE
+                                    "Your opponent has disconnected."
                             );
 
 
@@ -2496,15 +2455,13 @@ public class ChessUI extends JPanel {
 
                         case ERROR:
 
-                            JOptionPane.showMessageDialog(
+                            ObitricyDialog.showError(
 
                                     this,
 
-                                    message.getData(),
-
                                     "Multiplayer Error",
 
-                                    JOptionPane.ERROR_MESSAGE
+                                    message.getData()
                             );
 
                             break;
@@ -2521,19 +2478,68 @@ public class ChessUI extends JPanel {
 
     // =========================================================
     // SERVER MOVE REJECTION
+    // =========================================================
 
     private void handleMoveRejected(
             String reason) {
 
-        JOptionPane.showMessageDialog(
+        /*
+         * The server rejected the move that was already applied
+         * locally.
+         *
+         * Because only one local move can be waiting for server
+         * confirmation at a time, undoing the latest local move
+         * safely restores the board to the server-authoritative
+         * position.
+         */
+        if (
+                pendingOnlineMove != null
+                        && !pendingOnlineMove.isBlank()
+        ) {
+
+            System.err.println(
+                    "ROLLING BACK REJECTED ONLINE MOVE: "
+                            + pendingOnlineMove
+            );
+
+
+            /*
+             * Stop any animation associated with the rejected move.
+             */
+            chessBoard.stopAnimation();
+
+
+            /*
+             * Restore the board to the position before the
+             * rejected local move.
+             */
+            chessBoard.undoLastMove();
+
+
+            updateStatusBar();
+
+            refreshCapturedTrays();
+
+
+            /*
+             * The rejected move is no longer pending.
+             */
+            pendingOnlineMove = null;
+        }
+
+
+        ObitricyDialog.showWarning(
+
                 this,
+
+                "Online Multiplayer",
+
                 "The chess server rejected your move.\n\n"
                         + (reason == null
                         ? "Unknown reason."
-                        : reason),
-                "Online Multiplayer",
-                JOptionPane.WARNING_MESSAGE
+                        : reason)
         );
+
 
         System.err.println(
                 "SERVER REJECTED LOCAL MOVE: "
@@ -2543,8 +2549,8 @@ public class ChessUI extends JPanel {
 
 
     // =========================================================
-// REMOTE RESIGNATION
-// =========================================================
+    // REMOTE RESIGNATION
+    // =========================================================
 
     private void handleRemoteResignation(
             String color) {
@@ -2556,6 +2562,7 @@ public class ChessUI extends JPanel {
         boolean blackResigned =
                 color != null
                         && color.equalsIgnoreCase("BLACK");
+
 
         /*
          * Determine whether THIS player resigned.
@@ -2608,24 +2615,23 @@ public class ChessUI extends JPanel {
         rematchRequested = false;
 
 
-        JOptionPane.showMessageDialog(
+        ObitricyDialog.showInfo(
 
                 this,
 
-                message,
-
                 title,
 
-                JOptionPane.INFORMATION_MESSAGE
+                message
         );
 
 
         updateStatusBar();
     }
 
+
     // =========================================================
-// REMOTE REMATCH
-// =========================================================
+    // REMOTE REMATCH
+    // =========================================================
 
     private void handleRemoteRematch(
             String data) {
@@ -2651,14 +2657,6 @@ public class ChessUI extends JPanel {
                         && data.equalsIgnoreCase("START")
         ) {
 
-            /*
-             * BOTH players accepted.
-             *
-             * The server has already created a fresh
-             * authoritative GameState.
-             *
-             * Reset both client boards at the same time.
-             */
             System.out.println(
                     "ONLINE REMATCH STARTED"
             );
@@ -2696,8 +2694,7 @@ public class ChessUI extends JPanel {
         /*
          * If we already requested a rematch ourselves,
          * the server will normally send START once the
-         * opponent agrees. Therefore do not show a second
-         * confirmation dialog unnecessarily.
+         * opponent agrees.
          */
         if (rematchRequested) {
 
@@ -2705,27 +2702,20 @@ public class ChessUI extends JPanel {
         }
 
 
-        int result =
-                JOptionPane.showConfirmDialog(
+        boolean accepted =
+                ObitricyDialog.confirm(
 
                         this,
 
-                        opponent
-                                + " wants a rematch.\n\n"
-                                + "Start a new game?",
-
                         "Rematch",
 
-                        JOptionPane.YES_NO_OPTION,
-
-                        JOptionPane.QUESTION_MESSAGE
+                        opponent
+                                + " wants a rematch.\n\n"
+                                + "Start a new game?"
                 );
 
 
-        if (
-                result
-                        == JOptionPane.YES_OPTION
-        ) {
+        if (accepted) {
 
             if (
                     multiplayerClient != null
@@ -2741,8 +2731,6 @@ public class ChessUI extends JPanel {
 
 
                 /*
-                 * IMPORTANT:
-                 *
                  * Do NOT reset the board here.
                  *
                  * The server must receive BOTH agreements
@@ -2754,23 +2742,22 @@ public class ChessUI extends JPanel {
 
             } else {
 
-                JOptionPane.showMessageDialog(
+                ObitricyDialog.showError(
 
                         this,
 
-                        "The online server connection is no longer available.",
-
                         "Online Multiplayer",
 
-                        JOptionPane.ERROR_MESSAGE
+                        "The online server connection is no longer available."
                 );
             }
         }
     }
 
+
     // =========================================================
-// ONLINE GAME MENU
-// =========================================================
+    // ONLINE GAME MENU
+    // =========================================================
 
     private void showOnlineGameMenu() {
 
@@ -2800,25 +2787,17 @@ public class ChessUI extends JPanel {
 
 
         int choice =
-                JOptionPane.showOptionDialog(
+                ObitricyDialog.showOptions(
 
                         this,
+
+                        "Game Menu",
 
                         onlineGameOver
                                 ? "Online Game Over"
                                 : "Online Game",
 
-                        "Game Menu",
-
-                        JOptionPane.DEFAULT_OPTION,
-
-                        JOptionPane.PLAIN_MESSAGE,
-
-                        null,
-
-                        options,
-
-                        options[options.length - 1]
+                        options
                 );
 
 
@@ -2836,16 +2815,14 @@ public class ChessUI extends JPanel {
              */
             if (rematchRequested) {
 
-                JOptionPane.showMessageDialog(
+                ObitricyDialog.showInfo(
 
                         this,
 
-                        "Your rematch request has already been sent.\n\n"
-                                + "Waiting for your opponent.",
-
                         "Rematch",
 
-                        JOptionPane.INFORMATION_MESSAGE
+                        "Your rematch request has already been sent.\n\n"
+                                + "Waiting for your opponent."
                 );
 
                 return;
@@ -2868,29 +2845,25 @@ public class ChessUI extends JPanel {
                 multiplayerClient.sendRematch();
 
 
-                JOptionPane.showMessageDialog(
+                ObitricyDialog.showInfo(
 
                         this,
 
-                        "Rematch request sent.\n\n"
-                                + "Waiting for your opponent to accept.",
-
                         "Rematch",
 
-                        JOptionPane.INFORMATION_MESSAGE
+                        "Rematch request sent.\n\n"
+                                + "Waiting for your opponent to accept."
                 );
 
             } else {
 
-                JOptionPane.showMessageDialog(
+                ObitricyDialog.showError(
 
                         this,
 
-                        "The online server connection is no longer available.",
-
                         "Online Multiplayer",
 
-                        JOptionPane.ERROR_MESSAGE
+                        "The online server connection is no longer available."
                 );
             }
 
@@ -2908,31 +2881,26 @@ public class ChessUI extends JPanel {
                         && choice == 0
         ) {
 
-            int confirm =
-                    JOptionPane.showConfirmDialog(
+            boolean confirm =
+                    ObitricyDialog.confirm(
 
                             this,
 
-                            "Are you sure you want to resign?\n\n"
-                                    + "Your opponent will win the game.",
-
                             "Confirm Resignation",
 
-                            JOptionPane.YES_NO_OPTION,
-
-                            JOptionPane.WARNING_MESSAGE
+                            "Are you sure you want to resign?\n\n"
+                                    + "Your opponent will win the game."
                     );
 
 
-            if (
-                    confirm
-                            == JOptionPane.YES_OPTION
-            ) {
+            if (confirm) {
 
                 if (
                         multiplayerClient != null
                                 && multiplayerClient.isConnected()
                 ) {
+
+                    pendingOnlineMove = null;
 
                     System.out.println(
                             "ONLINE SEND RESIGN"
@@ -2943,15 +2911,13 @@ public class ChessUI extends JPanel {
 
                 } else {
 
-                    JOptionPane.showMessageDialog(
+                    ObitricyDialog.showError(
 
                             this,
 
-                            "The online server connection is no longer available.",
-
                             "Online Multiplayer",
 
-                            JOptionPane.ERROR_MESSAGE
+                            "The online server connection is no longer available."
                     );
                 }
             }

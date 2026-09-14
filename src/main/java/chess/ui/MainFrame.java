@@ -195,11 +195,10 @@ public class MainFrame extends JFrame {
 
             if (puzzleManager.getCurrentPuzzle() == null) {
 
-                JOptionPane.showMessageDialog(
+                ObitricyDialog.showWarning(
                         this,
-                        "No puzzles were found.",
                         "Puzzle Mode",
-                        JOptionPane.WARNING_MESSAGE
+                        "No puzzles were found."
                 );
 
                 return;
@@ -230,12 +229,11 @@ public class MainFrame extends JFrame {
 
             ex.printStackTrace();
 
-            JOptionPane.showMessageDialog(
+            ObitricyDialog.showError(
                     this,
-                    "Unable to load Puzzle Mode:\n"
-                            + ex.getMessage(),
                     "Puzzle Mode Error",
-                    JOptionPane.ERROR_MESSAGE
+                    "Unable to load Puzzle Mode:\n"
+                            + ex.getMessage()
             );
         }
     }
@@ -273,8 +271,9 @@ public class MainFrame extends JFrame {
 
         if (state == null) {
 
-            JOptionPane.showMessageDialog(
+            ObitricyDialog.showInfo(
                     this,
+                    "Saved Game",
                     "No saved game found."
             );
 

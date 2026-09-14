@@ -7,7 +7,13 @@ import java.awt.geom.RoundRectangle2D;
 public class IncorrectMoveDialog extends JDialog {
 
     private static final Color BACKGROUND =
-            new Color(10, 13, 17);
+            new Color(7, 11, 17);
+
+    private static final Color CARD =
+            new Color(17, 24, 34);
+
+    private static final Color BORDER =
+            new Color(255, 255, 255, 30);
 
     private static final Color RED =
             new Color(205, 70, 70);
@@ -45,9 +51,15 @@ public class IncorrectMoveDialog extends JDialog {
                 new IncorrectMovePanel()
         );
 
+        getRootPane().registerKeyboardAction(
+                e -> dispose(),
+                KeyStroke.getKeyStroke("ESCAPE"),
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+
         setSize(
-                440,
-                400
+                500,
+                375
         );
 
         setLocationRelativeTo(owner);
@@ -169,17 +181,18 @@ public class IncorrectMoveDialog extends JDialog {
 
             warning.setPreferredSize(
                     new Dimension(
-                            105,
-                            105
+                            88,
+                            88
                     )
             );
 
             warning.setMaximumSize(
                     new Dimension(
-                            105,
-                            105
+                            88,
+                            88
                     )
             );
+
 
             add(warning);
 
@@ -283,36 +296,80 @@ public class IncorrectMoveDialog extends JDialog {
                 int w = getWidth();
                 int h = getHeight();
 
-                RoundRectangle2D card =
-                        new RoundRectangle2D.Double(
-                                1,
-                                1,
-                                w - 2,
-                                h - 2,
-                                26,
-                                26
-                        );
+                // Soft shadow
+                g2.setColor(
+                        new Color(
+                                0,
+                                0,
+                                0,
+                                120
+                        )
+                );
 
+                g2.fillRoundRect(
+                        6,
+                        8,
+                        w - 12,
+                        h - 12,
+                        24,
+                        24
+                );
+
+                // Outer background
                 g2.setColor(
                         BACKGROUND
                 );
 
-                g2.fill(card);
+                g2.fillRoundRect(
+                        0,
+                        0,
+                        w - 1,
+                        h - 1,
+                        24,
+                        24
+                );
 
+                // Inner card
                 g2.setColor(
-                        new Color(
-                                RED.getRed(),
-                                RED.getGreen(),
-                                RED.getBlue(),
-                                190
-                        )
+                        CARD
                 );
 
-                g2.setStroke(
-                        new BasicStroke(1.5f)
+                g2.fillRoundRect(
+                        2,
+                        2,
+                        w - 5,
+                        h - 5,
+                        22,
+                        22
                 );
 
-                g2.draw(card);
+                // Red semantic accent
+                g2.setColor(
+                        RED
+                );
+
+                g2.fillRoundRect(
+                        60,
+                        0,
+                        w - 120,
+                        3,
+                        3,
+                        3
+                );
+
+                // Subtle border
+                g2.setColor(
+                        BORDER
+                );
+
+                g2.drawRoundRect(
+                        1,
+                        1,
+                        w - 3,
+                        h - 3,
+                        24,
+                        24
+                );
 
             } finally {
 
@@ -374,7 +431,7 @@ public class IncorrectMoveDialog extends JDialog {
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        16
+                        13
                 )
         );
 
@@ -393,15 +450,15 @@ public class IncorrectMoveDialog extends JDialog {
 
         button.setPreferredSize(
                 new Dimension(
-                        330,
-                        52
+                        300,
+                        44
                 )
         );
 
         button.setMaximumSize(
                 new Dimension(
-                        330,
-                        52
+                        300,
+                        44
                 )
         );
 

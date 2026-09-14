@@ -2,11 +2,34 @@ package chess.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Path2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.Random;
 
+/**
+ * Premium login-success dialog for Obitricy Chess Game.
+ *
+ * Features:
+ * - Premium dark/gold appearance
+ * - Animated success icon
+ * - Floating particles
+ * - Rounded dialog with shadow
+ * - Responsive text layout
+ * - Long-username protection
+ * - Hover animation on the confirmation button
+ * - Proper animation cleanup
+ *
+ * Compatible with the existing LoginPanel call:
+ *
+ * LoginSuccessDialog.show(
+ *         SwingUtilities.getWindowAncestor(LoginPanel.this),
+ *         user
+ * );
+ */
 public class LoginSuccessDialog extends JDialog {
 
     // =========================================================
@@ -14,10 +37,16 @@ public class LoginSuccessDialog extends JDialog {
     // =========================================================
 
     private static final Color BG =
-            new Color(11, 18, 28);
+            new Color(8, 13, 21);
+
+    private static final Color BG_TOP =
+            new Color(15, 23, 35);
 
     private static final Color BORDER =
-            new Color(90, 101, 116);
+            new Color(255, 255, 255, 30);
+
+    private static final Color BORDER_GOLD =
+            new Color(225, 184, 69, 120);
 
     private static final Color GOLD =
             new Color(225, 184, 69);
@@ -29,16 +58,35 @@ public class LoginSuccessDialog extends JDialog {
             new Color(181, 136, 35);
 
     private static final Color GREEN =
-            new Color(115, 225, 115);
+            new Color(120, 230, 125);
+
+    private static final Color GREEN_LIGHT =
+            new Color(155, 245, 160);
 
     private static final Color GREEN_DARK =
-            new Color(25, 65, 40);
+            new Color(24, 68, 39);
 
     private static final Color TEXT =
             new Color(247, 248, 250);
 
     private static final Color TEXT_SECONDARY =
             new Color(190, 198, 210);
+
+    private static final Color TEXT_MUTED =
+            new Color(112, 123, 140);
+
+    // =========================================================
+    // DIMENSIONS
+    // =========================================================
+
+    private static final int DIALOG_WIDTH = 430;
+    private static final int DIALOG_HEIGHT = 390;
+
+    private static final int CORNER_RADIUS = 24;
+
+    // =========================================================
+    // CONTENT
+    // =========================================================
 
     private final SuccessPanel successPanel;
 
@@ -56,26 +104,48 @@ public class LoginSuccessDialog extends JDialog {
                 ModalityType.APPLICATION_MODAL
         );
 
+        // -----------------------------------------------------
+        // WINDOW APPEARANCE
+        // -----------------------------------------------------
+
         setUndecorated(true);
 
         setBackground(
                 new Color(0, 0, 0, 0)
         );
 
+        // -----------------------------------------------------
+        // SUCCESS PANEL
+        // -----------------------------------------------------
+
         successPanel =
-                new SuccessPanel(username);
+                new SuccessPanel(
+                        username == null
+                                ? ""
+                                : username.trim()
+                );
 
         setContentPane(successPanel);
 
+        // -----------------------------------------------------
+        // SIZE
+        // -----------------------------------------------------
+
         setSize(
-                390,
-                365
+                DIALOG_WIDTH,
+                DIALOG_HEIGHT
         );
+
+        setResizable(false);
+
+        // -----------------------------------------------------
+        // CENTER ON OWNER
+        // -----------------------------------------------------
 
         setLocationRelativeTo(owner);
 
         // -----------------------------------------------------
-        // Proper cleanup when dialog closes
+        // CLEANUP
         // -----------------------------------------------------
 
         addWindowListener(
@@ -99,15 +169,17 @@ public class LoginSuccessDialog extends JDialog {
     }
 
     // =========================================================
-// SHOW DIALOG
-// =========================================================
+    // SHOW DIALOG
+    // =========================================================
 
     public static void show(
             Component parent,
             String username) {
 
         Window owner =
-                SwingUtilities.getWindowAncestor(parent);
+                parent instanceof Window
+                        ? (Window) parent
+                        : SwingUtilities.getWindowAncestor(parent);
 
         LoginSuccessDialog dialog =
                 new LoginSuccessDialog(
@@ -117,7 +189,6 @@ public class LoginSuccessDialog extends JDialog {
 
         dialog.setVisible(true);
     }
-
 
     // =========================================================
     // SUCCESS PANEL
@@ -131,7 +202,7 @@ public class LoginSuccessDialog extends JDialog {
                 new Random();
 
         private final Particle[] particles =
-                new Particle[24];
+                new Particle[28];
 
         private float glowPhase = 0f;
 
@@ -144,19 +215,7 @@ public class LoginSuccessDialog extends JDialog {
             setOpaque(false);
 
             setLayout(
-                    new BoxLayout(
-                            this,
-                            BoxLayout.Y_AXIS
-                    )
-            );
-
-            setBorder(
-                    BorderFactory.createEmptyBorder(
-                            25,
-                            30,
-                            25,
-                            30
-                    )
+                    new GridBagLayout()
             );
 
             // -------------------------------------------------
@@ -172,31 +231,62 @@ public class LoginSuccessDialog extends JDialog {
             }
 
             // -------------------------------------------------
+            // CONTENT
+            // -------------------------------------------------
+
+            JPanel content =
+                    new JPanel(
+                            new GridBagLayout()
+                    );
+
+            content.setOpaque(false);
+
+            GridBagConstraints c =
+                    new GridBagConstraints();
+
+            c.gridx = 0;
+            c.weightx = 1.0;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.CENTER;
+
+            // -------------------------------------------------
             // SUCCESS ICON
             // -------------------------------------------------
 
             SuccessIcon icon =
                     new SuccessIcon();
 
-            icon.setAlignmentX(
-                    Component.CENTER_ALIGNMENT
-            );
-
             icon.setPreferredSize(
                     new Dimension(
-                            110,
-                            105
+                            112,
+                            112
+                    )
+            );
+
+            icon.setMinimumSize(
+                    new Dimension(
+                            112,
+                            112
                     )
             );
 
             icon.setMaximumSize(
                     new Dimension(
-                            110,
-                            105
+                            112,
+                            112
                     )
             );
 
-            add(icon);
+            c.gridy = 0;
+            c.insets =
+                    new Insets(
+                            4,
+                            0,
+                            0,
+                            0
+                    );
+
+            content.add(icon, c);
 
             // -------------------------------------------------
             // TITLE
@@ -208,12 +298,6 @@ public class LoginSuccessDialog extends JDialog {
                             SwingConstants.CENTER
                     );
 
-            title.setAlignmentX(
-                    Component.CENTER_ALIGNMENT
-            );
-
-            title.setForeground(TEXT);
-
             title.setFont(
                     new Font(
                             "Segoe UI",
@@ -222,11 +306,18 @@ public class LoginSuccessDialog extends JDialog {
                     )
             );
 
-            add(title);
+            title.setForeground(TEXT);
 
-            add(
-                    Box.createVerticalStrut(7)
-            );
+            c.gridy++;
+            c.insets =
+                    new Insets(
+                            0,
+                            0,
+                            5,
+                            0
+                    );
+
+            content.add(title, c);
 
             // -------------------------------------------------
             // WELCOME MESSAGE
@@ -234,19 +325,9 @@ public class LoginSuccessDialog extends JDialog {
 
             JLabel welcome =
                     new JLabel(
-                            "Welcome back, "
-                                    + username
-                                    + "!",
+                            createWelcomeText(),
                             SwingConstants.CENTER
                     );
-
-            welcome.setAlignmentX(
-                    Component.CENTER_ALIGNMENT
-            );
-
-            welcome.setForeground(
-                    TEXT_SECONDARY
-            );
 
             welcome.setFont(
                     new Font(
@@ -256,11 +337,24 @@ public class LoginSuccessDialog extends JDialog {
                     )
             );
 
-            add(welcome);
-
-            add(
-                    Box.createVerticalStrut(15)
+            welcome.setForeground(
+                    TEXT_SECONDARY
             );
+
+            welcome.setHorizontalAlignment(
+                    SwingConstants.CENTER
+            );
+
+            c.gridy++;
+            c.insets =
+                    new Insets(
+                            0,
+                            8,
+                            0,
+                            8
+                    );
+
+            content.add(welcome, c);
 
             // -------------------------------------------------
             // DIVIDER
@@ -269,29 +363,37 @@ public class LoginSuccessDialog extends JDialog {
             Divider divider =
                     new Divider();
 
-            divider.setAlignmentX(
-                    Component.CENTER_ALIGNMENT
-            );
-
             divider.setPreferredSize(
                     new Dimension(
-                            330,
-                            15
+                            350,
+                            18
+                    )
+            );
+
+            divider.setMinimumSize(
+                    new Dimension(
+                            350,
+                            18
                     )
             );
 
             divider.setMaximumSize(
                     new Dimension(
-                            Integer.MAX_VALUE,
-                            15
+                            350,
+                            18
                     )
             );
 
-            add(divider);
+            c.gridy++;
+            c.insets =
+                    new Insets(
+                            13,
+                            0,
+                            13,
+                            0
+                    );
 
-            add(
-                    Box.createVerticalStrut(14)
-            );
+            content.add(divider, c);
 
             // -------------------------------------------------
             // GREAT BUTTON
@@ -302,20 +404,23 @@ public class LoginSuccessDialog extends JDialog {
                             "Great!"
                     );
 
-            greatButton.setAlignmentX(
-                    Component.CENTER_ALIGNMENT
-            );
-
             greatButton.setPreferredSize(
                     new Dimension(
-                            330,
+                            350,
+                            52
+                    )
+            );
+
+            greatButton.setMinimumSize(
+                    new Dimension(
+                            350,
                             52
                     )
             );
 
             greatButton.setMaximumSize(
                     new Dimension(
-                            Integer.MAX_VALUE,
+                            350,
                             52
                     )
             );
@@ -324,7 +429,82 @@ public class LoginSuccessDialog extends JDialog {
                     e -> dispose()
             );
 
-            add(greatButton);
+            c.gridy++;
+            c.insets =
+                    new Insets(
+                            0,
+                            0,
+                            0,
+                            0
+                    );
+
+            content.add(greatButton, c);
+
+            // -------------------------------------------------
+            // ADD CONTENT TO PANEL
+            // -------------------------------------------------
+
+            GridBagConstraints outer =
+                    new GridBagConstraints();
+
+            outer.gridx = 0;
+            outer.gridy = 0;
+            outer.weightx = 1.0;
+            outer.weighty = 1.0;
+            outer.anchor = GridBagConstraints.CENTER;
+
+            add(content, outer);
+        }
+
+        // =====================================================
+        // WELCOME TEXT
+        // =====================================================
+
+        private String createWelcomeText() {
+
+            String safeUsername =
+                    escapeHtml(username);
+
+            if (safeUsername.isEmpty()) {
+
+                return "<html>"
+                        + "<div style='text-align:center;'>"
+                        + "Welcome back!"
+                        + "</div>"
+                        + "</html>";
+            }
+
+            /*
+             * Long usernames are wrapped rather than allowed
+             * to extend beyond the dialog.
+             */
+            return "<html>"
+                    + "<div style='width:330px;"
+                    + "text-align:center;'>"
+                    + "Welcome back, "
+                    + "<b>"
+                    + safeUsername
+                    + "</b>!"
+                    + "</div>"
+                    + "</html>";
+        }
+
+        // =====================================================
+        // HTML ESCAPE
+        // =====================================================
+
+        private String escapeHtml(String text) {
+
+            if (text == null) {
+                return "";
+            }
+
+            return text
+                    .replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\"", "&quot;")
+                    .replace("'", "&#39;");
         }
 
         // =====================================================
@@ -355,6 +535,8 @@ public class LoginSuccessDialog extends JDialog {
                                 repaint();
                             }
                     );
+
+            animationTimer.setCoalesce(true);
 
             animationTimer.start();
         }
@@ -397,15 +579,18 @@ public class LoginSuccessDialog extends JDialog {
                 );
 
                 // -------------------------------------------------
-                // SHADOW
+                // OUTER SHADOW
                 // -------------------------------------------------
 
-                for (int i = 14;
+                for (int i = 18;
                      i >= 2;
                      i -= 2) {
 
                     int alpha =
-                            4 + (14 - i);
+                            Math.max(
+                                    2,
+                                    25 - i
+                            );
 
                     g2.setColor(
                             new Color(
@@ -418,27 +603,23 @@ public class LoginSuccessDialog extends JDialog {
 
                     g2.fillRoundRect(
                             -i / 2,
-                            i / 2,
+                            i / 3,
                             getWidth() + i,
                             getHeight() + i,
-                            22 + i,
-                            22 + i
+                            CORNER_RADIUS + i,
+                            CORNER_RADIUS + i
                     );
                 }
 
                 // -------------------------------------------------
-                // BACKGROUND
+                // MAIN BACKGROUND
                 // -------------------------------------------------
 
                 GradientPaint background =
                         new GradientPaint(
                                 0,
                                 0,
-                                new Color(
-                                        15,
-                                        23,
-                                        35
-                                ),
+                                BG_TOP,
                                 0,
                                 getHeight(),
                                 BG
@@ -451,8 +632,57 @@ public class LoginSuccessDialog extends JDialog {
                         0,
                         getWidth() - 1,
                         getHeight() - 1,
-                        22,
-                        22
+                        CORNER_RADIUS,
+                        CORNER_RADIUS
+                );
+
+                // -------------------------------------------------
+                // SOFT GOLD GLOW
+                // -------------------------------------------------
+
+                RadialGradientPaint glow =
+                        new RadialGradientPaint(
+                                new Point(
+                                        getWidth() / 2,
+                                        115
+                                ),
+                                175f,
+                                new float[]{
+                                        0.0f,
+                                        0.55f,
+                                        1.0f
+                                },
+                                new Color[]{
+                                        new Color(
+                                                225,
+                                                184,
+                                                69,
+                                                14
+                                        ),
+                                        new Color(
+                                                225,
+                                                184,
+                                                69,
+                                                5
+                                        ),
+                                        new Color(
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                        )
+                                }
+                        );
+
+                g2.setPaint(glow);
+
+                g2.fillRoundRect(
+                        1,
+                        1,
+                        getWidth() - 2,
+                        getHeight() - 2,
+                        CORNER_RADIUS,
+                        CORNER_RADIUS
                 );
 
                 // -------------------------------------------------
@@ -472,7 +702,7 @@ public class LoginSuccessDialog extends JDialog {
                 }
 
                 // -------------------------------------------------
-                // BORDER
+                // OUTER BORDER
                 // -------------------------------------------------
 
                 g2.setColor(BORDER);
@@ -486,8 +716,30 @@ public class LoginSuccessDialog extends JDialog {
                         0,
                         getWidth() - 1,
                         getHeight() - 1,
-                        22,
-                        22
+                        CORNER_RADIUS,
+                        CORNER_RADIUS
+                );
+
+                // -------------------------------------------------
+                // GOLD INNER BORDER
+                // -------------------------------------------------
+
+                g2.setColor(
+                        new Color(
+                                BORDER_GOLD.getRed(),
+                                BORDER_GOLD.getGreen(),
+                                BORDER_GOLD.getBlue(),
+                                35
+                        )
+                );
+
+                g2.drawRoundRect(
+                        2,
+                        2,
+                        getWidth() - 5,
+                        getHeight() - 5,
+                        CORNER_RADIUS - 3,
+                        CORNER_RADIUS - 3
                 );
 
                 // -------------------------------------------------
@@ -496,28 +748,29 @@ public class LoginSuccessDialog extends JDialog {
 
                 GradientPaint accent =
                         new GradientPaint(
-                                65,
+                                75,
                                 0,
                                 new Color(
                                         GOLD.getRed(),
                                         GOLD.getGreen(),
                                         GOLD.getBlue(),
-                                        30
+                                        15
                                 ),
                                 getWidth() / 2f,
                                 0,
-                                GOLD
+                                GOLD,
+                                true
                         );
 
                 g2.setPaint(accent);
 
                 g2.fillRoundRect(
-                        65,
+                        72,
                         0,
-                        getWidth() - 130,
-                        2,
-                        2,
-                        2
+                        getWidth() - 144,
+                        3,
+                        3,
+                        3
                 );
 
             } finally {
@@ -526,6 +779,39 @@ public class LoginSuccessDialog extends JDialog {
             }
 
             super.paintComponent(g);
+        }
+
+        // =====================================================
+        // CHILDREN CLIPPING
+        // =====================================================
+
+        @Override
+        protected void paintChildren(
+                Graphics g) {
+
+            Graphics2D g2 =
+                    (Graphics2D) g.create();
+
+            try {
+
+                Shape clip =
+                        new RoundRectangle2D.Double(
+                                0,
+                                0,
+                                getWidth(),
+                                getHeight(),
+                                CORNER_RADIUS,
+                                CORNER_RADIUS
+                        );
+
+                g2.clip(clip);
+
+                super.paintChildren(g2);
+
+            } finally {
+
+                g2.dispose();
+            }
         }
     }
 
@@ -544,8 +830,6 @@ public class LoginSuccessDialog extends JDialog {
         protected void paintComponent(
                 Graphics g) {
 
-            super.paintComponent(g);
-
             Graphics2D g2 =
                     (Graphics2D) g.create();
 
@@ -556,15 +840,21 @@ public class LoginSuccessDialog extends JDialog {
                         RenderingHints.VALUE_ANTIALIAS_ON
                 );
 
-                int size = 92;
+                g2.setRenderingHint(
+                        RenderingHints.KEY_RENDERING,
+                        RenderingHints.VALUE_RENDER_QUALITY
+                );
+
+                int size = 88;
 
                 int x =
                         (getWidth() - size) / 2;
 
-                int y = 5;
+                int y =
+                        (getHeight() - size) / 2;
 
                 // -------------------------------------------------
-                // PULSING GLOW
+                // ANIMATED GREEN GLOW
                 // -------------------------------------------------
 
                 float pulse =
@@ -574,13 +864,13 @@ public class LoginSuccessDialog extends JDialog {
                                                 Math.sin(
                                                         successPanel.glowPhase
                                                 )
-                                                        + 1
+                                                        + 1.0
                                         )
-                                                / 2
+                                                / 2.0
                                 );
 
-                int alpha =
-                        30
+                int glowAlpha =
+                        24
                                 + (int)
                                 (
                                         35 * pulse
@@ -588,18 +878,38 @@ public class LoginSuccessDialog extends JDialog {
 
                 g2.setColor(
                         new Color(
-                                80,
-                                220,
                                 100,
-                                alpha
+                                235,
+                                120,
+                                glowAlpha
                         )
                 );
 
                 g2.fillOval(
-                        x - 15,
-                        y - 15,
-                        size + 30,
-                        size + 30
+                        x - 18,
+                        y - 18,
+                        size + 36,
+                        size + 36
+                );
+
+                // -------------------------------------------------
+                // SECONDARY GLOW
+                // -------------------------------------------------
+
+                g2.setColor(
+                        new Color(
+                                100,
+                                235,
+                                120,
+                                16
+                        )
+                );
+
+                g2.fillOval(
+                        x - 10,
+                        y - 10,
+                        size + 20,
+                        size + 20
                 );
 
                 // -------------------------------------------------
@@ -607,16 +917,12 @@ public class LoginSuccessDialog extends JDialog {
                 // -------------------------------------------------
 
                 g2.setColor(
-                        new Color(
-                                135,
-                                235,
-                                135
-                        )
+                        GREEN_LIGHT
                 );
 
                 g2.setStroke(
                         new BasicStroke(
-                                3f
+                                3.2f
                         )
                 );
 
@@ -631,15 +937,55 @@ public class LoginSuccessDialog extends JDialog {
                 // INNER CIRCLE
                 // -------------------------------------------------
 
-                g2.setColor(
-                        GREEN_DARK
+                GradientPaint circleGradient =
+                        new GradientPaint(
+                                x,
+                                y,
+                                new Color(
+                                        37,
+                                        91,
+                                        52
+                                ),
+                                x + size,
+                                y + size,
+                                GREEN_DARK
+                        );
+
+                g2.setPaint(
+                        circleGradient
                 );
 
                 g2.fillOval(
-                        x + 4,
-                        y + 4,
-                        size - 8,
-                        size - 8
+                        x + 5,
+                        y + 5,
+                        size - 10,
+                        size - 10
+                );
+
+                // -------------------------------------------------
+                // INNER HIGHLIGHT RING
+                // -------------------------------------------------
+
+                g2.setColor(
+                        new Color(
+                                255,
+                                255,
+                                255,
+                                35
+                        )
+                );
+
+                g2.setStroke(
+                        new BasicStroke(
+                                1.2f
+                        )
+                );
+
+                g2.drawOval(
+                        x + 8,
+                        y + 8,
+                        size - 16,
+                        size - 16
                 );
 
                 // -------------------------------------------------
@@ -652,7 +998,7 @@ public class LoginSuccessDialog extends JDialog {
 
                 g2.setStroke(
                         new BasicStroke(
-                                8f,
+                                7f,
                                 BasicStroke.CAP_ROUND,
                                 BasicStroke.JOIN_ROUND
                         )
@@ -662,21 +1008,49 @@ public class LoginSuccessDialog extends JDialog {
                         new Path2D.Double();
 
                 check.moveTo(
-                        x + 25,
-                        y + 47
+                        x + 24,
+                        y + 45
                 );
 
                 check.lineTo(
-                        x + 41,
-                        y + 63
+                        x + 39,
+                        y + 60
                 );
 
                 check.lineTo(
-                        x + 69,
-                        y + 31
+                        x + 66,
+                        y + 29
                 );
 
                 g2.draw(check);
+
+                // -------------------------------------------------
+                // SMALL GOLD ACCENT
+                // -------------------------------------------------
+
+                g2.setColor(
+                        new Color(
+                                GOLD_LIGHT.getRed(),
+                                GOLD_LIGHT.getGreen(),
+                                GOLD_LIGHT.getBlue(),
+                                160
+                        )
+                );
+
+                g2.setStroke(
+                        new BasicStroke(
+                                1.5f
+                        )
+                );
+
+                g2.drawArc(
+                        x + 13,
+                        y + 13,
+                        size - 26,
+                        size - 26,
+                        205,
+                        85
+                );
 
             } finally {
 
@@ -716,32 +1090,80 @@ public class LoginSuccessDialog extends JDialog {
                 int y =
                         getHeight() / 2;
 
-                // Left line
-                g2.setColor(
-                        new Color(
-                                GOLD.getRed(),
-                                GOLD.getGreen(),
-                                GOLD.getBlue(),
-                                80
-                        )
+                // -------------------------------------------------
+                // LEFT LINE
+                // -------------------------------------------------
+
+                GradientPaint leftGradient =
+                        new GradientPaint(
+                                0,
+                                y,
+                                new Color(
+                                        GOLD.getRed(),
+                                        GOLD.getGreen(),
+                                        GOLD.getBlue(),
+                                        10
+                                ),
+                                center - 15,
+                                y,
+                                new Color(
+                                        GOLD.getRed(),
+                                        GOLD.getGreen(),
+                                        GOLD.getBlue(),
+                                        90
+                                )
+                        );
+
+                g2.setPaint(
+                        leftGradient
                 );
 
                 g2.drawLine(
                         0,
                         y,
-                        center - 12,
+                        center - 15,
                         y
                 );
 
-                // Right line
+                // -------------------------------------------------
+                // RIGHT LINE
+                // -------------------------------------------------
+
+                GradientPaint rightGradient =
+                        new GradientPaint(
+                                center + 15,
+                                y,
+                                new Color(
+                                        GOLD.getRed(),
+                                        GOLD.getGreen(),
+                                        GOLD.getBlue(),
+                                        90
+                                ),
+                                getWidth(),
+                                y,
+                                new Color(
+                                        GOLD.getRed(),
+                                        GOLD.getGreen(),
+                                        GOLD.getBlue(),
+                                        10
+                                )
+                        );
+
+                g2.setPaint(
+                        rightGradient
+                );
+
                 g2.drawLine(
-                        center + 12,
+                        center + 15,
                         y,
                         getWidth(),
                         y
                 );
 
-                // Diamond
+                // -------------------------------------------------
+                // CENTER DIAMOND
+                // -------------------------------------------------
+
                 Polygon diamond =
                         new Polygon();
 
@@ -765,10 +1187,47 @@ public class LoginSuccessDialog extends JDialog {
                         y
                 );
 
-                g2.setColor(GOLD);
+                g2.setColor(
+                        GOLD
+                );
 
                 g2.fillPolygon(
                         diamond
+                );
+
+                // -------------------------------------------------
+                // DIAMOND HIGHLIGHT
+                // -------------------------------------------------
+
+                Polygon highlight =
+                        new Polygon();
+
+                highlight.addPoint(
+                        center,
+                        y - 5
+                );
+
+                highlight.addPoint(
+                        center + 4,
+                        y
+                );
+
+                highlight.addPoint(
+                        center,
+                        y
+                );
+
+                highlight.addPoint(
+                        center - 4,
+                        y
+                );
+
+                g2.setColor(
+                        GOLD_LIGHT
+                );
+
+                g2.fillPolygon(
+                        highlight
                 );
 
             } finally {
@@ -782,7 +1241,8 @@ public class LoginSuccessDialog extends JDialog {
     // SUCCESS BUTTON
     // =========================================================
 
-    private class SuccessButton extends JButton {
+    private class SuccessButton
+            extends JButton {
 
         private boolean hover;
 
@@ -817,22 +1277,28 @@ public class LoginSuccessDialog extends JDialog {
                     )
             );
 
+            setToolTipText(
+                    "Continue to Obitricy Chess"
+            );
+
             addMouseListener(
-                    new java.awt.event.MouseAdapter() {
+                    new MouseAdapter() {
 
                         @Override
                         public void mouseEntered(
-                                java.awt.event.MouseEvent e) {
+                                MouseEvent e) {
 
                             hover = true;
+
                             repaint();
                         }
 
                         @Override
                         public void mouseExited(
-                                java.awt.event.MouseEvent e) {
+                                MouseEvent e) {
 
                             hover = false;
+
                             repaint();
                         }
                     }
@@ -852,6 +1318,35 @@ public class LoginSuccessDialog extends JDialog {
                         RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON
                 );
+
+                // -------------------------------------------------
+                // BUTTON SHADOW
+                // -------------------------------------------------
+
+                if (isEnabled()) {
+
+                    g2.setColor(
+                            new Color(
+                                    0,
+                                    0,
+                                    0,
+                                    hover ? 55 : 40
+                            )
+                    );
+
+                    g2.fillRoundRect(
+                            0,
+                            3,
+                            getWidth(),
+                            getHeight(),
+                            14,
+                            14
+                    );
+                }
+
+                // -------------------------------------------------
+                // BUTTON GRADIENT
+                // -------------------------------------------------
 
                 Color top =
                         hover
@@ -873,18 +1368,23 @@ public class LoginSuccessDialog extends JDialog {
                                 bottom
                         );
 
-                g2.setPaint(gradient);
+                g2.setPaint(
+                        gradient
+                );
 
                 g2.fillRoundRect(
                         0,
                         0,
                         getWidth(),
-                        getHeight(),
+                        getHeight() - 2,
                         14,
                         14
                 );
 
-                // Subtle highlight
+                // -------------------------------------------------
+                // HOVER HIGHLIGHT
+                // -------------------------------------------------
+
                 if (hover) {
 
                     g2.setColor(
@@ -892,7 +1392,7 @@ public class LoginSuccessDialog extends JDialog {
                                     255,
                                     255,
                                     255,
-                                    35
+                                    38
                             )
                     );
 
@@ -900,7 +1400,7 @@ public class LoginSuccessDialog extends JDialog {
                             1,
                             1,
                             getWidth() - 2,
-                            getHeight() / 2,
+                            (getHeight() - 2) / 2,
                             13,
                             13
                     );
@@ -916,12 +1416,13 @@ public class LoginSuccessDialog extends JDialog {
     }
 
     // =========================================================
-// PARTICLE
-// =========================================================
+    // PARTICLE
+    // =========================================================
 
     private class Particle {
 
-        private final Random random = new Random();
+        private final Random random =
+                new Random();
 
         private double x;
         private double y;
@@ -932,18 +1433,20 @@ public class LoginSuccessDialog extends JDialog {
         private Color color;
 
         Particle() {
+
             reset(true);
         }
 
         // =====================================================
-        // RESET PARTICLE
+        // RESET
         // =====================================================
 
-        private void reset(boolean initial) {
+        private void reset(
+                boolean initial) {
 
             int width =
                     Math.max(
-                            330,
+                            360,
                             getWidth()
                     );
 
@@ -959,21 +1462,26 @@ public class LoginSuccessDialog extends JDialog {
             if (initial) {
 
                 y =
-                        25
-                                + random.nextInt(110);
+                        15
+                                + random.nextInt(
+                                145
+                        );
 
             } else {
 
-                y = 10;
+                y = 8;
             }
 
             speed =
-                    0.25
-                            + random.nextDouble() * 0.65;
+                    0.20
+                            + random.nextDouble()
+                            * 0.65;
 
             size =
-                    3
-                            + random.nextInt(4);
+                    2
+                            + random.nextInt(
+                            4
+                    );
 
             int type =
                     random.nextInt(3);
@@ -985,17 +1493,17 @@ public class LoginSuccessDialog extends JDialog {
                                 230,
                                 190,
                                 70,
-                                190
+                                145
                         );
 
             } else if (type == 1) {
 
                 color =
                         new Color(
-                                45,
+                                70,
                                 190,
-                                240,
-                                190
+                                235,
+                                120
                         );
 
             } else {
@@ -1005,7 +1513,7 @@ public class LoginSuccessDialog extends JDialog {
                                 105,
                                 220,
                                 105,
-                                190
+                                125
                         );
             }
         }
@@ -1018,7 +1526,7 @@ public class LoginSuccessDialog extends JDialog {
 
             y += speed;
 
-            if (y > 185) {
+            if (y > 205) {
 
                 reset(false);
             }
@@ -1056,6 +1564,7 @@ public class LoginSuccessDialog extends JDialog {
             return diamond;
         }
     }
+
     // =========================================================
     // DIALOG LIFECYCLE
     // =========================================================
@@ -1067,11 +1576,27 @@ public class LoginSuccessDialog extends JDialog {
         if (visible) {
 
             successPanel.startAnimation();
+
         } else {
 
             successPanel.stopAnimation();
         }
 
         super.setVisible(visible);
+    }
+
+    // =========================================================
+    // DISPOSE
+    // =========================================================
+
+    @Override
+    public void dispose() {
+
+        if (successPanel != null) {
+
+            successPanel.stopAnimation();
+        }
+
+        super.dispose();
     }
 }

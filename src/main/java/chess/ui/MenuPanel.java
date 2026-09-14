@@ -35,7 +35,7 @@ public class MenuPanel extends JPanel {
             new Color(38, 21, 11);
 
     private static final Color PANEL =
-            new Color(35, 20, 11, 245);
+            new Color(24, 16, 10, 248);
 
     private static final Color PANEL_LIGHT =
             new Color(53, 30, 16, 245);
@@ -144,10 +144,10 @@ public class MenuPanel extends JPanel {
                         ),
 
                         new EmptyBorder(
-                                22,
-                                30,
-                                22,
-                                30
+                                26,
+                                34,
+                                24,
+                                34
                         )
                 )
         );
@@ -243,8 +243,24 @@ public class MenuPanel extends JPanel {
 
         JLabel title =
                 new JLabel(
-                        "♟  OBITRICY CHESS"
+                        "OBITRICY CHESS"
                 );
+
+        title.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        title.setForeground(
+                GOLD_LIGHT
+        );
+
+        title.setFont(
+                new Font(
+                        "Georgia",
+                        Font.BOLD,
+                        32
+                )
+        );
 
         title.setAlignmentX(
                 Component.CENTER_ALIGNMENT
@@ -284,7 +300,7 @@ public class MenuPanel extends JPanel {
                 new Font(
                         "Segoe UI",
                         Font.PLAIN,
-                        13
+                        11
                 )
         );
 
@@ -797,7 +813,7 @@ public class MenuPanel extends JPanel {
 
         JLabel footer =
                 new JLabel(
-                        "♟  OBITRICY"
+                        "OBITRICY CHESS"
                 );
 
         footer.setAlignmentX(
@@ -845,7 +861,7 @@ public class MenuPanel extends JPanel {
 
         int height =
                 large
-                        ? 50
+                        ? 52
                         : 42;
 
         Dimension size =
@@ -898,7 +914,7 @@ public class MenuPanel extends JPanel {
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        16
+                        15
                 )
         );
 
@@ -945,7 +961,7 @@ public class MenuPanel extends JPanel {
         Dimension size =
                 new Dimension(
                         360,
-                        40
+                        42
                 );
 
         button.setPreferredSize(
@@ -1152,11 +1168,10 @@ public class MenuPanel extends JPanel {
 
         if (mode == null) {
 
-            JOptionPane.showMessageDialog(
+            ObitricyDialog.showWarning(
                     this,
-                    "Please select a valid game mode.",
                     "Game Mode",
-                    JOptionPane.WARNING_MESSAGE
+                    "Please select a valid game mode."
             );
 
             return;
@@ -1231,23 +1246,14 @@ public class MenuPanel extends JPanel {
 
     private void confirmExit() {
 
-        int option =
-                JOptionPane.showConfirmDialog(
-
+        boolean confirmed =
+                ObitricyDialog.confirm(
                         this,
-
-                        "Exit Obitricy Chess?",
-
                         "Exit Game",
-
-                        JOptionPane.YES_NO_OPTION,
-
-                        JOptionPane.QUESTION_MESSAGE
+                        "Exit Obitricy Chess?"
                 );
 
-
-        if (option ==
-                JOptionPane.YES_OPTION) {
+        if (confirmed) {
 
             System.exit(0);
         }

@@ -9,7 +9,6 @@ import chess.pieces.Pawn;
 import chess.pieces.Piece;
 import chess.pieces.Queen;
 import chess.pieces.Rook;
-import chess.ai.ComputerDifficulty;
 import chess.rules.MoveValidator;
 import chess.rules.CheckDetector;
 
@@ -21,6 +20,12 @@ import java.util.UUID;
  * The server owns one authoritative GameState for the room.
  * Clients send move coordinates; the server validates and
  * applies the move before forwarding it to the opponent.
+ *
+ * IMPORTANT:
+ * Normal chess moves are blocked after game over.
+ *
+ * Undo and Redo are intentionally allowed after game over
+ * so players can navigate through their move history.
  */
 public class GameRoom {
 
@@ -49,7 +54,16 @@ public class GameRoom {
      */
     private GameState gameState;
 
+    /*
+     * True when the CURRENT authoritative position is a
+     * game-over position.
+     *
+     * This does NOT prevent Undo/Redo.
+     *
+     * It only prevents making a NEW chess move.
+     */
     private boolean gameOver;
+
     /*
      * Rematch state.
      *
@@ -57,6 +71,7 @@ public class GameRoom {
      */
     private boolean whiteRematchRequested;
     private boolean blackRematchRequested;
+
 
     public GameRoom() {
 
@@ -76,9 +91,11 @@ public class GameRoom {
                 );
     }
 
+
     public String getGameId() {
         return gameId;
     }
+
 
     public synchronized boolean addPlayer(
             ClientConnection client) {
@@ -100,18 +117,25 @@ public class GameRoom {
         return false;
     }
 
+
     public synchronized boolean isFull() {
+
         return whitePlayer != null
                 && blackPlayer != null;
     }
 
+
     public synchronized ClientConnection getWhitePlayer() {
+
         return whitePlayer;
     }
 
+
     public synchronized ClientConnection getBlackPlayer() {
+
         return blackPlayer;
     }
+
 
     public synchronized ClientConnection getOpponent(
             ClientConnection client) {
@@ -126,6 +150,7 @@ public class GameRoom {
 
         return null;
     }
+
 
     public synchronized boolean removePlayer(
             ClientConnection client) {
@@ -145,9 +170,12 @@ public class GameRoom {
         return removed;
     }
 
+
     public synchronized boolean isGameOver() {
+
         return gameOver;
     }
+
 
     public synchronized boolean isPlayersTurn(
             ClientConnection client) {
@@ -167,12 +195,14 @@ public class GameRoom {
                 == playerIsWhite;
     }
 
+
     /**
      * Validates and applies a client move to the authoritative
      * server-side chess position.
      *
      * Accepted input:
-     *   fromRow,fromCol,toRow,toCol,promotion
+     *
+     * fromRow,fromCol,toRow,toCol,promotion
      *
      * promotion may be blank, Queen, Rook, Bishop or Knight.
      */
@@ -186,6 +216,7 @@ public class GameRoom {
 
         if (client != whitePlayer
                 && client != blackPlayer) {
+
             return MoveResult.NOT_IN_ROOM;
         }
 
@@ -193,6 +224,15 @@ public class GameRoom {
             return MoveResult.GAME_OVER;
         }
 
+        /*
+         * IMPORTANT:
+         *
+         * A NEW chess move is never allowed after
+         * checkmate/stalemate.
+         *
+         * Undo/Redo are handled separately below
+         * and remain available.
+         */
         if (gameOver) {
             return MoveResult.GAME_OVER;
         }
@@ -218,16 +258,27 @@ public class GameRoom {
         int toCol;
 
         try {
-            fromRow = Integer.parseInt(parts[0].trim());
-            fromCol = Integer.parseInt(parts[1].trim());
-            toRow = Integer.parseInt(parts[2].trim());
-            toCol = Integer.parseInt(parts[3].trim());
+
+            fromRow =
+                    Integer.parseInt(parts[0].trim());
+
+            fromCol =
+                    Integer.parseInt(parts[1].trim());
+
+            toRow =
+                    Integer.parseInt(parts[2].trim());
+
+            toCol =
+                    Integer.parseInt(parts[3].trim());
+
         } catch (NumberFormatException ex) {
+
             return MoveResult.INVALID_DATA;
         }
 
         if (!inBounds(fromRow, fromCol)
                 || !inBounds(toRow, toCol)) {
+
             return MoveResult.INVALID_DATA;
         }
 
@@ -303,10 +354,13 @@ public class GameRoom {
         }
 
         /*
-         * GameState.makeMove() performs the same chess legality
-         * checks used by the desktop game.
+         * GameState.makeMove() performs the same chess
+         * legality checks used by the desktop game.
          */
-        if (!MoveValidator.isLegalMove(move, gameState)) {
+        if (!MoveValidator.isLegalMove(
+                move,
+                gameState)) {
+
             return MoveResult.ILLEGAL_MOVE;
         }
 
@@ -315,26 +369,56 @@ public class GameRoom {
         }
 
         /*
-         * Check whether the resulting position has ended the game.
-         * We do not send a special game-over packet yet; the clients
-         * already evaluate checkmate/stalemate locally after MOVE.
+         * Check whether the resulting position has ended
+         * the game.
+         *
+         * We do not send a special game-over packet here.
+         * The clients already evaluate the resulting
+         * position locally after receiving MOVE.
          */
-        gameOver =
-                CheckDetector.isCheckmate(gameState)
-                        || gameState.isStalemate();
+        updateGameOverStatus();
 
         return MoveResult.ACCEPTED;
     }
 
 
-    public synchronized boolean undoMove() {
+    /**
+     * Undoes the most recent move on the authoritative
+     * server-side GameState.
+     *
+     * IMPORTANT:
+     *
+     * Undo is allowed even when the current position is
+     * CHECKMATE, STALEMATE or another server-side game-over
+     * position.
+     *
+     * After undoing, the game-over status is recalculated.
+     */
+    public synchronized boolean undoMove(
+            ClientConnection client) {
 
+        /*
+         * The requester must be a player in this room.
+         */
+        if (client == null
+                || (client != whitePlayer
+                && client != blackPlayer)) {
+
+            return false;
+        }
+
+        /*
+         * Both players must be connected before
+         * an online undo can be performed.
+         */
         if (!isFull()) {
             return false;
         }
 
         /*
-         * Check whether there is actually a move to undo.
+         * DO NOT reject undo merely because gameOver == true.
+         *
+         * This is the key fix.
          */
         if (gameState.getMoveHistory().size() == 0) {
             return false;
@@ -342,37 +426,64 @@ public class GameRoom {
 
         /*
          * Undo the most recent move on the
-         * server's authoritative GameState.
+         * authoritative GameState.
          */
         gameState.undoMove();
 
         /*
-         * Undoing a move means the game is no longer
-         * considered finished.
+         * Recalculate the resulting position.
+         *
+         * If the undo moves us away from checkmate,
+         * gameOver becomes false.
          */
-        gameOver = false;
-
-        /*
-         * Re-evaluate the resulting position in case
-         * the position is still checkmate/stalemate.
-         */
-        gameOver =
-                CheckDetector.isCheckmate(gameState)
-                        || gameState.isStalemate();
+        updateGameOverStatus();
 
         return true;
     }
 
 
-    public synchronized boolean redoMove() {
+    /**
+     * Redoes the most recently undone move on the
+     * authoritative server-side GameState.
+     *
+     * IMPORTANT:
+     *
+     * Redo is also allowed when the current position is
+     * game-over.
+     *
+     * This allows:
+     *
+     * CHECKMATE
+     *    -> UNDO
+     *    -> normal position
+     *    -> REDO
+     *    -> CHECKMATE
+     */
+    public synchronized boolean redoMove(
+            ClientConnection client) {
 
+        /*
+         * The requester must be a player in this room.
+         */
+        if (client == null
+                || (client != whitePlayer
+                && client != blackPlayer)) {
+
+            return false;
+        }
+
+        /*
+         * Both players must be connected before
+         * an online redo can be performed.
+         */
         if (!isFull()) {
             return false;
         }
 
         /*
-         * Remember the history size so we can determine
-         * whether redo actually occurred.
+         * DO NOT reject redo merely because gameOver == true.
+         *
+         * This is also intentional.
          */
         int historyBefore =
                 gameState.getMoveHistory().size();
@@ -394,13 +505,27 @@ public class GameRoom {
 
         /*
          * Recalculate game-over status after redo.
+         *
+         * If the redone move is the mating move,
+         * gameOver becomes true again.
          */
-        gameOver =
-                CheckDetector.isCheckmate(gameState)
-                        || gameState.isStalemate();
+        updateGameOverStatus();
 
         return true;
     }
+
+
+    /**
+     * Recalculates whether the CURRENT authoritative
+     * position is a game-over position.
+     */
+    private void updateGameOverStatus() {
+
+        gameOver =
+                CheckDetector.isCheckmate(gameState)
+                        || gameState.isStalemate();
+    }
+
 
     /**
      * Ends the online game because a player resigned.
@@ -416,6 +541,7 @@ public class GameRoom {
 
         if (client != whitePlayer
                 && client != blackPlayer) {
+
             return false;
         }
 
@@ -438,9 +564,6 @@ public class GameRoom {
      *
      * The rematch does NOT start until both players
      * have requested/accepted it.
-     *
-     * @return true if this player is valid and the
-     *         request was recorded.
      */
     public synchronized boolean requestRematch(
             ClientConnection client) {
@@ -451,6 +574,7 @@ public class GameRoom {
 
         if (client != whitePlayer
                 && client != blackPlayer) {
+
             return false;
         }
 
@@ -478,6 +602,7 @@ public class GameRoom {
         return true;
     }
 
+
     /**
      * Returns true when both players have agreed
      * to the rematch.
@@ -488,11 +613,10 @@ public class GameRoom {
                 && blackRematchRequested;
     }
 
+
     /**
      * Starts a completely new online chess game
      * after both players have agreed to a rematch.
-     *
-     * @return true if the rematch was started.
      */
     public synchronized boolean startRematch() {
 
@@ -531,6 +655,7 @@ public class GameRoom {
         return true;
     }
 
+
     /**
      * Returns whether this player has already
      * requested the rematch.
@@ -549,11 +674,13 @@ public class GameRoom {
         return false;
     }
 
+
     /**
-     * Returns the canonical move string after successful validation.
-     * The server uses this to forward exactly what it accepted.
+     * Returns the canonical move string after
+     * successful validation.
      */
-    public String normalizeMoveData(String moveData) {
+    public String normalizeMoveData(
+            String moveData) {
 
         String[] parts =
                 moveData.split(",", -1);
@@ -574,6 +701,7 @@ public class GameRoom {
                 + promotion;
     }
 
+
     private boolean isPromotionMove(
             Piece piece,
             int toRow) {
@@ -582,6 +710,7 @@ public class GameRoom {
                 && ((piece.isWhite() && toRow == 0)
                 || (!piece.isWhite() && toRow == 7));
     }
+
 
     private Piece createPromotionPiece(
             String type,
@@ -607,6 +736,7 @@ public class GameRoom {
                     null;
         };
     }
+
 
     private boolean inBounds(
             int row,

@@ -7,7 +7,13 @@ import java.awt.geom.RoundRectangle2D;
 public class PuzzleSolvedDialog extends JDialog {
 
     private static final Color BACKGROUND =
-            new Color(10, 13, 17);
+            new Color(7, 11, 17);
+
+    private static final Color CARD =
+            new Color(17, 24, 34);
+
+    private static final Color BORDER =
+            new Color(255, 255, 255, 30);
 
     private static final Color GOLD =
             new Color(225, 180, 65);
@@ -52,9 +58,15 @@ public class PuzzleSolvedDialog extends JDialog {
                 new PuzzleSolvedPanel()
         );
 
+        getRootPane().registerKeyboardAction(
+                e -> dispose(),
+                KeyStroke.getKeyStroke("ESCAPE"),
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+
         setSize(
-                440,
-                470
+                500,
+                430
         );
 
         setLocationRelativeTo(owner);
@@ -166,15 +178,15 @@ public class PuzzleSolvedDialog extends JDialog {
 
             trophy.setPreferredSize(
                     new Dimension(
-                            115,
-                            115
+                            100,
+                            100
                     )
             );
 
             trophy.setMaximumSize(
                     new Dimension(
-                            115,
-                            115
+                            100,
+                            100
                     )
             );
 
@@ -284,36 +296,80 @@ public class PuzzleSolvedDialog extends JDialog {
                 int w = getWidth();
                 int h = getHeight();
 
-                RoundRectangle2D card =
-                        new RoundRectangle2D.Double(
-                                1,
-                                1,
-                                w - 2,
-                                h - 2,
-                                26,
-                                26
-                        );
+                // Soft shadow
+                g2.setColor(
+                        new Color(
+                                0,
+                                0,
+                                0,
+                                120
+                        )
+                );
 
+                g2.fillRoundRect(
+                        6,
+                        8,
+                        w - 12,
+                        h - 12,
+                        24,
+                        24
+                );
+
+                // Outer background
                 g2.setColor(
                         BACKGROUND
                 );
 
-                g2.fill(card);
+                g2.fillRoundRect(
+                        0,
+                        0,
+                        w - 1,
+                        h - 1,
+                        24,
+                        24
+                );
 
+                // Inner card
                 g2.setColor(
-                        new Color(
-                                GOLD.getRed(),
-                                GOLD.getGreen(),
-                                GOLD.getBlue(),
-                                190
-                        )
+                        CARD
                 );
 
-                g2.setStroke(
-                        new BasicStroke(1.5f)
+                g2.fillRoundRect(
+                        2,
+                        2,
+                        w - 5,
+                        h - 5,
+                        22,
+                        22
                 );
 
-                g2.draw(card);
+                // Gold semantic accent
+                g2.setColor(
+                        GOLD
+                );
+
+                g2.fillRoundRect(
+                        60,
+                        0,
+                        w - 120,
+                        3,
+                        3,
+                        3
+                );
+
+                // Subtle border
+                g2.setColor(
+                        BORDER
+                );
+
+                g2.drawRoundRect(
+                        1,
+                        1,
+                        w - 3,
+                        h - 3,
+                        24,
+                        24
+                );
 
             } finally {
 
@@ -375,7 +431,7 @@ public class PuzzleSolvedDialog extends JDialog {
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        16
+                        13
                 )
         );
 
@@ -394,15 +450,15 @@ public class PuzzleSolvedDialog extends JDialog {
 
         button.setPreferredSize(
                 new Dimension(
-                        330,
-                        52
+                        300,
+                        44
                 )
         );
 
         button.setMaximumSize(
                 new Dimension(
-                        330,
-                        52
+                        300,
+                        44
                 )
         );
 

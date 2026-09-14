@@ -28,7 +28,7 @@ public class CheckDialog extends JDialog {
         setResizable(false);
         setBackground(new Color(0, 0, 0, 0));
 
-        setSize(470, 320);
+        setSize(500, 350);
         setLocationRelativeTo(parent);
 
         DialogPanel root = new DialogPanel();
@@ -383,11 +383,11 @@ public class CheckDialog extends JDialog {
         KingIcon() {
 
             setPreferredSize(
-                    new Dimension(58, 58)
+                    new Dimension(68, 68)
             );
 
             setMaximumSize(
-                    new Dimension(58, 58)
+                    new Dimension(68, 68)
             );
         }
 

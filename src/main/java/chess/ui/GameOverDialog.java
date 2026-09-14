@@ -22,7 +22,7 @@ public class GameOverDialog extends JDialog {
         setUndecorated(true);
         setResizable(false);
         setBackground(new Color(0,0,0,0));
-        setSize(500,365);
+        setSize(520,380);
         setLocationRelativeTo(parent);
 
         ResultPanel root = new ResultPanel();
@@ -53,7 +53,7 @@ public class GameOverDialog extends JDialog {
 
         JLabel titleLabel = text(
                 title == null || title.isBlank() ? "GAME OVER" : title,
-                29,Font.BOLD,TEXT);
+                27,Font.BOLD,TEXT);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         center.add(titleLabel);
         center.add(Box.createVerticalStrut(8));
@@ -74,7 +74,7 @@ public class GameOverDialog extends JDialog {
 
         JPanel buttons = new JPanel(new GridLayout(1,2,12,0));
         buttons.setOpaque(false);
-        buttons.setPreferredSize(new Dimension(0,45));
+        buttons.setPreferredSize(new Dimension(0,44));
 
         JButton newGame = new GoldButton("NEW GAME");
         JButton menu = new DarkButton("MAIN MENU");
@@ -107,7 +107,7 @@ public class GameOverDialog extends JDialog {
     }
 
     private static class ResultPanel extends JPanel {
-        private final int radius=22;
+        private final int radius=24;
         ResultPanel(){setOpaque(false);}
         protected void paintComponent(Graphics g) {
             Graphics2D g2=(Graphics2D)g.create();
@@ -137,7 +137,10 @@ public class GameOverDialog extends JDialog {
     }
 
     private static class KingIcon extends JComponent {
-        KingIcon(){setPreferredSize(new Dimension(58,58));setMaximumSize(new Dimension(58,58));}
+        KingIcon(){
+            setPreferredSize(new Dimension(68,68));
+            setMaximumSize(new Dimension(68,68));
+        }
         protected void paintComponent(Graphics g) {
             Graphics2D g2=(Graphics2D)g.create();
             try {

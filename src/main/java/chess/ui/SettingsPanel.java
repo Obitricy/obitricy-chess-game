@@ -125,7 +125,7 @@ public class SettingsPanel extends JPanel {
 
         // =====================================================
         // BACKGROUND SOUND
-       // =====================================================
+        // =====================================================
 
         SoundManager.setEnabled(soundEnabled);
 
@@ -159,7 +159,6 @@ public class SettingsPanel extends JPanel {
                         BoxLayout.Y_AXIS
                 )
         );
-
 
         // =====================================================
         // THEME
@@ -750,6 +749,8 @@ public class SettingsPanel extends JPanel {
 
                     soundOnButton.setSelected(true);
                     soundOffButton.setSelected(false);
+
+                    updateSoundButtonAppearance();
                 }
         );
 
@@ -766,6 +767,8 @@ public class SettingsPanel extends JPanel {
 
                     soundOnButton.setSelected(false);
                     soundOffButton.setSelected(true);
+
+                    updateSoundButtonAppearance();
                 }
         );
 
@@ -860,6 +863,9 @@ public class SettingsPanel extends JPanel {
 
                     helpOnButton.setSelected(true);
                     helpOffButton.setSelected(false);
+
+                    helpOnButton.setBackground(BUTTON_ON);
+                    helpOffButton.setBackground(BUTTON_OFF);
                 }
         );
 
@@ -870,7 +876,22 @@ public class SettingsPanel extends JPanel {
 
                     helpOnButton.setSelected(false);
                     helpOffButton.setSelected(true);
+
+                    helpOnButton.setBackground(BUTTON_OFF);
+                    helpOffButton.setBackground(BUTTON_ON);
                 }
+        );
+
+        helpOnButton.setBackground(
+                helpEnabled
+                        ? BUTTON_ON
+                        : BUTTON_OFF
+        );
+
+        helpOffButton.setBackground(
+                helpEnabled
+                        ? BUTTON_OFF
+                        : BUTTON_ON
         );
 
         buttons.add(helpOnButton);
@@ -941,6 +962,12 @@ public class SettingsPanel extends JPanel {
 
                     notificationOffButton
                             .setSelected(false);
+
+                    notificationOnButton
+                            .setBackground(BUTTON_ON);
+
+                    notificationOffButton
+                            .setBackground(BUTTON_OFF);
                 }
         );
 
@@ -954,7 +981,25 @@ public class SettingsPanel extends JPanel {
 
                     notificationOffButton
                             .setSelected(true);
+
+                    notificationOnButton
+                            .setBackground(BUTTON_OFF);
+
+                    notificationOffButton
+                            .setBackground(BUTTON_ON);
                 }
+        );
+
+        notificationOnButton.setBackground(
+                notificationEnabled
+                        ? BUTTON_ON
+                        : BUTTON_OFF
+        );
+
+        notificationOffButton.setBackground(
+                notificationEnabled
+                        ? BUTTON_OFF
+                        : BUTTON_ON
         );
 
         buttons.add(
@@ -1069,15 +1114,24 @@ public class SettingsPanel extends JPanel {
                 )
         );
 
-        rate.addActionListener(
-                e ->
-                        JOptionPane.showMessageDialog(
-                                this,
-                                "Thank you for supporting Obitricy Chess Game!",
-                                "Rate Us",
-                                JOptionPane.INFORMATION_MESSAGE
-                        )
-        );
+        rate.addActionListener(e -> {
+
+            int rating =
+                    ObitricyDialog.rateUs(this);
+
+            if (rating > 0) {
+
+                ObitricyDialog.showSuccess(
+                        this,
+                        "Thank You!",
+                        "Thank you for rating Obitricy Chess Game "
+                                + rating
+                                + " star"
+                                + (rating == 1 ? "" : "s")
+                                + "!"
+                );
+            }
+        });
 
         panel.add(rate);
 
@@ -1119,8 +1173,8 @@ public class SettingsPanel extends JPanel {
     }
 
     // =========================================================
-// ROW
-// =========================================================
+    // ROW
+    // =========================================================
 
     private JPanel createRow() {
 
@@ -1156,7 +1210,6 @@ public class SettingsPanel extends JPanel {
 
         return row;
     }
-
 
     // =========================================================
     // ROW LABEL
@@ -1536,8 +1589,8 @@ public class SettingsPanel extends JPanel {
         );
 
         // =====================================================
-       // SOUND
-       // =====================================================
+        // SOUND
+        // =====================================================
 
         SoundManager.setEnabled(
                 soundEnabled

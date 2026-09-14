@@ -170,18 +170,33 @@ public class GameState implements Serializable {
      * the player who actually made the remote move.
      */
     public boolean makeRemoteMove(Move move, boolean moverIsWhite) {
-
         if (move == null) {
             return false;
         }
 
+        // Remember the current turn in case the remote move fails.
+        boolean originalTurn = isWhiteTurn();
+
+        // Temporarily set the turn to the player who made the remote move.
         if (moverIsWhite) {
             setCurrentPlayerWhite();
         } else {
             setCurrentPlayerBlack();
         }
 
-        return applyMove(move, true, true);
+        // Apply the move using the normal validated move pipeline.
+        boolean success = applyMove(move, true, true);
+
+        // If the remote move failed, restore the original turn.
+        if (!success) {
+            if (originalTurn) {
+                setCurrentPlayerWhite();
+            } else {
+                setCurrentPlayerBlack();
+            }
+        }
+
+        return success;
     }
 
     private boolean applyMove(

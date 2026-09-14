@@ -41,12 +41,14 @@ public class BoardGameFlow {
 
         gameState.undoMove();
 
+        board.getTimer().restart();
+
         SoundManager.playUndo();
 
         board.repaint();
     }
 
-    // ================= REDO =================
+// ================= REDO =================
 
     public void redoLastMove() {
 
@@ -57,6 +59,30 @@ public class BoardGameFlow {
         ui.clearHint();
 
         gameState.redoMove();
+
+        statusManager.update();
+
+        GameStatusManager.Status status =
+                statusManager.getStatus();
+
+        if (status == GameStatusManager.Status.CHECKMATE
+                || status == GameStatusManager.Status.STALEMATE
+                || status == GameStatusManager.Status.DRAW_INSUFFICIENT_MATERIAL) {
+
+            board.getTimer().stop();
+
+            ui.setGameOverTitle(
+                    statusManager.getTitle()
+            );
+
+            ui.setGameOverMessage(
+                    statusManager.getMessage()
+            );
+
+        } else {
+
+            board.getTimer().restart();
+        }
 
         SoundManager.playRedo();
 

@@ -5,8 +5,7 @@ import chess.puzzle.PuzzleManager;
 import chess.audio.SoundManager;
 import chess.ui.PuzzleSolvedDialog;
 import chess.ui.IncorrectMoveDialog;
-
-import javax.swing.*;
+import chess.ui.ObitricyDialog;
 
 public class BoardPuzzleHandler {
 
@@ -80,11 +79,14 @@ public class BoardPuzzleHandler {
 
         if (!manager.hasNextPuzzle()) {
 
-            JOptionPane.showMessageDialog(
+            /*
+             * Use the premium Obitricy dialog instead
+             * of the default JOptionPane.
+             */
+            ObitricyDialog.showSuccess(
                     board,
-                    "Congratulations! You completed all puzzles! 🎉",
                     "Puzzle Complete",
-                    JOptionPane.INFORMATION_MESSAGE
+                    "Congratulations! You completed all puzzles! 🎉"
             );
 
             return false;

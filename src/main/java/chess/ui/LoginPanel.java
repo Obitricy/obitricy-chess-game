@@ -21,6 +21,8 @@ import chess.auth.LoginManager;
  * - loading indicator
  * - subtle chess background
  * - focus/hover states
+ *
+ * Login feedback now uses the unified Obitricy premium dialog system.
  */
 public class LoginPanel extends JPanel {
 
@@ -435,11 +437,10 @@ public class LoginPanel extends JPanel {
 
                     if (user.isEmpty() || pass.isEmpty()) {
 
-                        JOptionPane.showMessageDialog(
+                        ObitricyDialog.showWarning(
                                 this,
-                                "Please enter your username and password.",
                                 "Login Required",
-                                JOptionPane.WARNING_MESSAGE
+                                "Please enter your username and password."
                         );
 
                         if (user.isEmpty()) {
@@ -520,11 +521,10 @@ public class LoginPanel extends JPanel {
                                             forgotPasswordButton.setEnabled(true);
                                             rememberMeCheckBox.setEnabled(true);
 
-                                            JOptionPane.showMessageDialog(
+                                            ObitricyDialog.showError(
                                                     LoginPanel.this,
-                                                    "Invalid username or password.",
                                                     "Login Failed",
-                                                    JOptionPane.ERROR_MESSAGE
+                                                    "Invalid username or password."
                                             );
 
                                             passwordField.selectAll();
@@ -538,11 +538,10 @@ public class LoginPanel extends JPanel {
                                         forgotPasswordButton.setEnabled(true);
                                         rememberMeCheckBox.setEnabled(true);
 
-                                        JOptionPane.showMessageDialog(
+                                        ObitricyDialog.showError(
                                                 LoginPanel.this,
-                                                "Login failed.",
-                                                "Error",
-                                                JOptionPane.ERROR_MESSAGE
+                                                "Login Failed",
+                                                "Login failed."
                                         );
 
                                         ex.printStackTrace();
@@ -572,12 +571,11 @@ public class LoginPanel extends JPanel {
         forgotPasswordButton.addActionListener(
                 e -> {
 
-                    JOptionPane.showMessageDialog(
+                    ObitricyDialog.showInfo(
                             this,
-                            "Password recovery is not implemented yet.\n"
-                                    + "Please contact the administrator.",
                             "Password Recovery",
-                            JOptionPane.INFORMATION_MESSAGE
+                            "Password recovery is not implemented yet.\n"
+                                    + "Please contact the administrator."
                     );
                 }
         );
@@ -736,8 +734,6 @@ public class LoginPanel extends JPanel {
 
                 int newAlpha = alpha;
 
-                // Remove white/near-white background,
-                // including anti-aliased edge pixels.
                 if (brightness > 238) {
                     newAlpha = 0;
                 } else if (brightness > 220) {
@@ -1577,7 +1573,6 @@ public class LoginPanel extends JPanel {
                         RenderingHints.VALUE_ANTIALIAS_ON
                 );
 
-                // Soft outer shadow.
                 for (int i = 14; i >= 2; i -= 2) {
 
                     int alpha =
@@ -1605,7 +1600,6 @@ public class LoginPanel extends JPanel {
                     );
                 }
 
-                // Card.
                 g2.setColor(background);
 
                 g2.fillRoundRect(
@@ -1617,7 +1611,6 @@ public class LoginPanel extends JPanel {
                         radius
                 );
 
-                // Subtle inner highlight.
                 g2.setColor(CARD_INNER_BORDER);
 
                 g2.drawRoundRect(
@@ -1629,7 +1622,6 @@ public class LoginPanel extends JPanel {
                         radius - 2
                 );
 
-                // Gold top accent.
                 GradientPaint goldAccent =
                         new GradientPaint(
                                 70,
@@ -1661,7 +1653,6 @@ public class LoginPanel extends JPanel {
                         2
                 );
 
-                // Outer border.
                 g2.setColor(CARD_BORDER);
 
                 g2.drawRoundRect(
@@ -2064,10 +2055,6 @@ public class LoginPanel extends JPanel {
                     RenderingHints.VALUE_ANTIALIAS_ON
             );
 
-            // -------------------------------------------------
-            // DARK GRADIENT
-            // -------------------------------------------------
-
             GradientPaint gradient =
                     new GradientPaint(
                             0,
@@ -2086,10 +2073,6 @@ public class LoginPanel extends JPanel {
                     getWidth(),
                     getHeight()
             );
-
-            // -------------------------------------------------
-            // SUBTLE CHESSBOARD
-            // -------------------------------------------------
 
             int square =
                     Math.max(
@@ -2126,10 +2109,6 @@ public class LoginPanel extends JPanel {
                 }
             }
 
-            // -------------------------------------------------
-            // DECORATIVE CHESS PIECES
-            // -------------------------------------------------
-
             g2.setFont(
                     new Font(
                             "Serif",
@@ -2164,10 +2143,6 @@ public class LoginPanel extends JPanel {
                     170
             );
 
-            // -------------------------------------------------
-            // SMALL PIECES
-            // -------------------------------------------------
-
             g2.setFont(
                     new Font(
                             "Serif",
@@ -2196,10 +2171,6 @@ public class LoginPanel extends JPanel {
                     getWidth() - 86,
                     getHeight() - 165
             );
-
-            // -------------------------------------------------
-            // SOFT CENTER GLOW
-            // -------------------------------------------------
 
             RadialGradientPaint glow =
                     new RadialGradientPaint(

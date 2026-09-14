@@ -32,7 +32,13 @@ public class PromotionDialog extends JDialog {
     // =========================================================
 
     private static final Color HEADER =
-            new Color(10, 9, 11);
+            new Color(7, 11, 17);
+
+    private static final Color CARD =
+            new Color(17, 24, 34);
+
+    private static final Color SHADOW =
+            new Color(0, 0, 0, 120);
 
     private static final Color GOLD =
             new Color(245, 190, 55);
@@ -56,10 +62,10 @@ public class PromotionDialog extends JDialog {
     // SIZE
     // =========================================================
 
-    private static final int DIALOG_WIDTH = 440;
-    private static final int DIALOG_HEIGHT = 470;
+    private static final int DIALOG_WIDTH = 500;
+    private static final int DIALOG_HEIGHT = 500;
 
-    private static final int HEADER_HEIGHT = 68;
+    private static final int HEADER_HEIGHT = 72;
 
     private final boolean white;
 
@@ -144,52 +150,104 @@ public class PromotionDialog extends JDialog {
         RoundedPanel root =
                 new RoundedPanel(
                         26,
-                        Color.WHITE
+                        CARD
                 );
 
         root.setLayout(
-                new BorderLayout()
+                new BorderLayout(
+                        0,
+                        0
+                )
         );
 
         // =====================================================
         // HEADER
         // =====================================================
 
-        RoundedPanel header =
-                new RoundedPanel(
-                        26,
-                        HEADER
+        JPanel header =
+                new JPanel(
+                        new BorderLayout()
                 );
 
-        header.setPreferredSize(
-                new Dimension(
-                        DIALOG_WIDTH,
-                        HEADER_HEIGHT
+        header.setOpaque(false);
+
+        header.setBorder(
+                BorderFactory.createEmptyBorder(
+                        18,
+                        20,
+                        12,
+                        20
                 )
         );
 
-        header.setLayout(
-                new GridBagLayout()
+        JLabel brand =
+                new JLabel(
+                        "OBITRICY  •  CHESS",
+                        SwingConstants.CENTER
+                );
+
+        brand.setForeground(
+                GOLD
+        );
+
+        brand.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
         );
 
         JLabel title =
                 new JLabel(
-                        "Promote pawn to?"
+                        "Promote pawn to?",
+                        SwingConstants.CENTER
                 );
 
         title.setForeground(
-                GOLD
+                Color.WHITE
         );
 
         title.setFont(
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        27
+                        24
                 )
         );
 
-        header.add(title);
+        JPanel headerText =
+                new JPanel();
+
+        headerText.setOpaque(false);
+
+        headerText.setLayout(
+                new BoxLayout(
+                        headerText,
+                        BoxLayout.Y_AXIS
+                )
+        );
+
+        brand.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        title.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        headerText.add(brand);
+
+        headerText.add(
+                Box.createVerticalStrut(5)
+        );
+
+        headerText.add(title);
+
+        header.add(
+                headerText,
+                BorderLayout.CENTER
+        );
 
         root.add(
                 header,
@@ -236,11 +294,22 @@ public class PromotionDialog extends JDialog {
                 new JPanel(
                         new GridLayout(
                                 2,
-                                2
+                                2,
+                                8,
+                                8
                         )
                 );
 
         choices.setOpaque(false);
+
+        choices.setBorder(
+                BorderFactory.createEmptyBorder(
+                        8,
+                        14,
+                        14,
+                        14
+                )
+        );
 
         choices.add(
                 createChoice(
@@ -279,7 +348,21 @@ public class PromotionDialog extends JDialog {
                 BorderLayout.CENTER
         );
 
-        setContentPane(root);
+        setContentPane(
+                root
+        );
+
+        // =====================================================
+        // ESCAPE
+        // =====================================================
+
+        getRootPane().registerKeyboardAction(
+                e -> dispose(),
+                KeyStroke.getKeyStroke(
+                        "ESCAPE"
+                ),
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
     }
 
     // =========================================================
@@ -377,8 +460,8 @@ public class PromotionDialog extends JDialog {
             imageLabel.setIcon(
                     createPieceIcon(
                             image,
-                            95,
-                            112
+                            105,
+                            120
                     )
             );
         }
@@ -401,7 +484,7 @@ public class PromotionDialog extends JDialog {
                 new Font(
                         "Segoe UI",
                         Font.BOLD,
-                        20
+                        17
                 )
         );
 
@@ -687,8 +770,7 @@ public class PromotionDialog extends JDialog {
                 Graphics g) {
 
             Graphics2D g2 =
-                    (Graphics2D)
-                            g.create();
+                    (Graphics2D) g.create();
 
             try {
 
@@ -697,6 +779,21 @@ public class PromotionDialog extends JDialog {
                         RenderingHints.VALUE_ANTIALIAS_ON
                 );
 
+                // Soft shadow
+                g2.setColor(
+                        SHADOW
+                );
+
+                g2.fillRoundRect(
+                        6,
+                        8,
+                        getWidth() - 12,
+                        getHeight() - 12,
+                        radius,
+                        radius
+                );
+
+                // Main card
                 g2.setColor(
                         background
                 );
@@ -704,10 +801,38 @@ public class PromotionDialog extends JDialog {
                 g2.fillRoundRect(
                         0,
                         0,
-                        getWidth(),
-                        getHeight(),
+                        getWidth() - 1,
+                        getHeight() - 1,
                         radius,
                         radius
+                );
+
+                // Subtle border
+                g2.setColor(
+                        BORDER
+                );
+
+                g2.drawRoundRect(
+                        1,
+                        1,
+                        getWidth() - 3,
+                        getHeight() - 3,
+                        radius,
+                        radius
+                );
+
+                // Gold top accent
+                g2.setColor(
+                        GOLD
+                );
+
+                g2.fillRoundRect(
+                        65,
+                        0,
+                        getWidth() - 130,
+                        3,
+                        3,
+                        3
                 );
 
             } finally {
@@ -717,5 +842,6 @@ public class PromotionDialog extends JDialog {
 
             super.paintComponent(g);
         }
+
     }
 }

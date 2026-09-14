@@ -340,17 +340,105 @@ public class ChessServer {
     }
 
     private void handleUndo(ClientConnection client) {
-        GameRoom room = client.getGameRoom();
-        if (room == null) { sendError(client, "You are not in a game."); return; }
-        if (!room.undoMove()) { sendError(client, "Nothing to undo."); return; }
-        broadcastToRoom(room, new NetworkMessage(NetworkMessage.Type.UNDO, ""));
+
+        GameRoom room =
+                client.getGameRoom();
+
+        if (room == null) {
+
+            sendError(
+                    client,
+                    "You are not in a game."
+            );
+
+            return;
+        }
+
+        if (!room.undoMove(client)) {
+
+            if (room.isGameOver()) {
+
+                sendError(
+                        client,
+                        "Undo is not available after the game has ended."
+                );
+
+            } else {
+
+                sendError(
+                        client,
+                        "Nothing to undo."
+                );
+            }
+
+            return;
+        }
+
+        /*
+         * The server has successfully changed the
+         * authoritative position.
+         *
+         * Both clients must now perform exactly one
+         * matching undo operation locally.
+         */
+        broadcastToRoom(
+                room,
+                new NetworkMessage(
+                        NetworkMessage.Type.UNDO,
+                        ""
+                )
+        );
     }
 
     private void handleRedo(ClientConnection client) {
-        GameRoom room = client.getGameRoom();
-        if (room == null) { sendError(client, "You are not in a game."); return; }
-        if (!room.redoMove()) { sendError(client, "Nothing to redo."); return; }
-        broadcastToRoom(room, new NetworkMessage(NetworkMessage.Type.REDO, ""));
+
+        GameRoom room =
+                client.getGameRoom();
+
+        if (room == null) {
+
+            sendError(
+                    client,
+                    "You are not in a game."
+            );
+
+            return;
+        }
+
+        if (!room.redoMove(client)) {
+
+            if (room.isGameOver()) {
+
+                sendError(
+                        client,
+                        "Redo is not available after the game has ended."
+                );
+
+            } else {
+
+                sendError(
+                        client,
+                        "Nothing to redo."
+                );
+            }
+
+            return;
+        }
+
+        /*
+         * The server has successfully changed the
+         * authoritative position.
+         *
+         * Both clients must now perform exactly one
+         * matching redo operation locally.
+         */
+        broadcastToRoom(
+                room,
+                new NetworkMessage(
+                        NetworkMessage.Type.REDO,
+                        ""
+                )
+        );
     }
 
     private String getMoveError(GameRoom.MoveResult result) {
