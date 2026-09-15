@@ -3,6 +3,9 @@ package chess.auth;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -19,12 +22,17 @@ import java.util.Map;
  * - Secure password hashing
  * - Backward compatibility with existing plain-text passwords
  * - Persistent user storage
- *
+
+ * User data is stored per Windows user in:
+
+ * %LOCALAPPDATA%/Obitricy/Chess Game/users.dat
+
  * New passwords are stored using PBKDF2WithHmacSHA256.
  */
 public class LoginManager {
 
-    private static final File FILE = new File("users.dat");
+    private static final File FILE =
+            getUserDataFile();
 
     private static final int SALT_LENGTH = 16;
     private static final int HASH_LENGTH = 256;
@@ -35,10 +43,62 @@ public class LoginManager {
     private static final SecureRandom SECURE_RANDOM =
             new SecureRandom();
 
-    private static Map<String, String> users = new HashMap<>();
+    private static Map<String, String> users =
+            new HashMap<>();
 
     static {
         load();
+    }
+
+    // ============================================================
+    // USER DATA LOCATION
+    // ============================================================
+
+    private static File getUserDataFile() {
+
+        String localAppData =
+                System.getenv("LOCALAPPDATA");
+
+        Path dataDirectory;
+
+        if (localAppData != null &&
+                !localAppData.trim().isEmpty()) {
+
+            dataDirectory = Paths.get(
+                    localAppData,
+                    "Obitricy",
+                    "Chess Game"
+            );
+
+        } else {
+
+            /*
+             * Fallback for systems where LOCALAPPDATA is not
+             * available.
+             */
+            dataDirectory = Paths.get(
+                    System.getProperty("user.home"),
+                    ".obitricy",
+                    "Chess Game"
+            );
+        }
+
+        try {
+
+            Files.createDirectories(dataDirectory);
+
+        } catch (IOException e) {
+
+            throw new IllegalStateException(
+                    "Unable to create Obitricy application data directory: "
+                            + dataDirectory,
+                    e
+            );
+        }
+
+        return dataDirectory
+                .resolve("users.dat")
+                .toFile();
     }
 
     // ============================================================
@@ -57,7 +117,8 @@ public class LoginManager {
             return false;
         }
 
-        String storedPassword = users.get(user);
+        String storedPassword =
+                users.get(user);
 
         if (storedPassword == null) {
             return false;
@@ -91,7 +152,11 @@ public class LoginManager {
 
             if (securePassword != null) {
 
-                users.put(user, securePassword);
+                users.put(
+                        user,
+                        securePassword
+                );
+
                 save();
             }
 
@@ -105,7 +170,9 @@ public class LoginManager {
     // REGISTER
     // ============================================================
 
-    public static boolean register(String user, String pass) {
+    public static boolean register(
+            String user,
+            String pass) {
 
         if (user == null || pass == null) {
             return false;
@@ -152,7 +219,10 @@ public class LoginManager {
         // ADD USER
         // --------------------------------------------------------
 
-        users.put(user, hashedPassword);
+        users.put(
+                user,
+                hashedPassword
+        );
 
         // --------------------------------------------------------
         // SAVE TO DISK
@@ -179,7 +249,8 @@ public class LoginManager {
     // USERNAME VALIDATION
     // ============================================================
 
-    private static boolean isValidUsername(String user) {
+    private static boolean isValidUsername(
+            String user) {
 
         if (user == null || user.isEmpty()) {
             return false;
@@ -195,24 +266,30 @@ public class LoginManager {
          *
          * No spaces or special characters.
          */
-        return user.matches("[A-Za-z0-9_]{3,20}");
+        return user.matches(
+                "[A-Za-z0-9_]{3,20}"
+        );
     }
 
     // ============================================================
     // PASSWORD HASHING
     // ============================================================
 
-    private static String hashPassword(String password) {
+    private static String hashPassword(
+            String password) {
 
-        byte[] salt = new byte[SALT_LENGTH];
+        byte[] salt =
+                new byte[SALT_LENGTH];
+
         SECURE_RANDOM.nextBytes(salt);
 
-        PBEKeySpec spec = new PBEKeySpec(
-                password.toCharArray(),
-                salt,
-                ITERATIONS,
-                HASH_LENGTH
-        );
+        PBEKeySpec spec =
+                new PBEKeySpec(
+                        password.toCharArray(),
+                        salt,
+                        ITERATIONS,
+                        HASH_LENGTH
+                );
 
         try {
 
@@ -221,18 +298,22 @@ public class LoginManager {
                             "PBKDF2WithHmacSHA256"
                     );
 
-            byte[] hash = factory
-                    .generateSecret(spec)
-                    .getEncoded();
+            byte[] hash =
+                    factory
+                            .generateSecret(spec)
+                            .getEncoded();
 
             return "HASHED:"
-                    + Base64.getEncoder().encodeToString(salt)
+                    + Base64.getEncoder()
+                    .encodeToString(salt)
                     + ":"
-                    + Base64.getEncoder().encodeToString(hash);
+                    + Base64.getEncoder()
+                    .encodeToString(hash);
 
         } catch (Exception e) {
 
             e.printStackTrace();
+
             return null;
 
         } finally {
@@ -259,10 +340,12 @@ public class LoginManager {
             }
 
             byte[] salt =
-                    Base64.getDecoder().decode(parts[1]);
+                    Base64.getDecoder()
+                            .decode(parts[1]);
 
             byte[] expectedHash =
-                    Base64.getDecoder().decode(parts[2]);
+                    Base64.getDecoder()
+                            .decode(parts[2]);
 
             PBEKeySpec spec =
                     new PBEKeySpec(
@@ -324,6 +407,7 @@ public class LoginManager {
         int result = 0;
 
         for (int i = 0; i < a.length; i++) {
+
             result |= a[i] ^ b[i];
         }
 
@@ -351,6 +435,7 @@ public class LoginManager {
         } catch (IOException e) {
 
             e.printStackTrace();
+
             return false;
         }
     }
@@ -373,7 +458,8 @@ public class LoginManager {
                         )
         ) {
 
-            Object data = in.readObject();
+            Object data =
+                    in.readObject();
 
             if (data instanceof HashMap<?, ?>) {
 
@@ -390,6 +476,7 @@ public class LoginManager {
 
             /*
              * Do not destroy the existing file automatically.
+             *
              * If users.dat is corrupted, the problem should be
              * investigated rather than silently overwritten.
              */
@@ -405,6 +492,7 @@ public class LoginManager {
      * new accounts.
      */
     public static int getMinimumPasswordLength() {
+
         return MIN_PASSWORD_LENGTH;
     }
 }
